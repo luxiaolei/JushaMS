@@ -1,0 +1,17 @@
+$JUSHA_HOME/data/yyyy-MM-dd_MM月dd日用户画像
+                |- /rawdata
+                |  |- name0.txt
+                |  |- name1.txt
+                |  |- ...
+                |- cleaned.csv
+                |- transformed.csv
+                |- /result
+                |  |- iXoY_N.json
+                |  |- ...
+                |- status.json:
+                        {
+                            "refineDone": true/false,
+                            "resultDone": true/false,
+                            "error": "...",
+                            "errorTrace": "..."
+                        }

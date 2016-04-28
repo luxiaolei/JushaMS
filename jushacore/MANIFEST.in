@@ -1,0 +1,4 @@
+graft doc
+prune doc/build
+include NEWS
+include bin/MapperGUI.py
