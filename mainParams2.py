@@ -24,16 +24,13 @@ if __name__=='__main__':
 	filterDic = Filter.assetFilterDic(dim= 2 ,intresedCode= [107, 130, 170], genF= True)
 	print('Construct filters Dictionary done!')
 
-    	paramsForGenjson = []
-    	for kp, vp in paramDic.items():
-         	for kf, vf in filterDic.items():
-         		epoch = (vp[0], vp[1], kf)
-         		paramsForGenjson.append(epoch)
-     	print('Construct paramters for the next step is done!')
+	paramsForGenjson = []
+	for kp, vp in paramDic.items():
+     	for kf, vf in filterDic.items():
+     		epoch = (vp[0], vp[1], kf)
+     		paramsForGenjson.append(epoch)
+ 	print('Construct paramters for the next step is done!')
 
-    	paramsDicDir = os.path.join(confUser['DATADIR'], 'params.json')
-    	with open(paramsDicDir, 'wb') as f:
-    		dump(paramsForGenjson, f)
-
-
-
+	paramsDicDir = os.path.join(confUser['DATADIR'], 'params.json')
+	with open(paramsDicDir, 'wb') as f:
+		dump(paramsForGenjson, f)
