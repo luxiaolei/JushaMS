@@ -5,11 +5,13 @@ from __init__ import confUser
 import pandas as pd
 import pickle as pkl
 import jushacore as mapper 
+from tools import to_d3js_graph
 import sys
 import os
 
 
-def core_wrapper(data, filt, interval, overlap, fn, genJson= True):
+
+def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
     """
     class method of class coreWrapper. it recieves inputs required by jushacore as parameters
     and return the result if genJson==False, else write result to fn.
@@ -35,7 +37,7 @@ def core_wrapper(data, filt, interval, overlap, fn, genJson= True):
         with open('G.pkl', 'wb') as f:
             pkl.dump(mapper_output, f)
 
-        baseDir = datadir
+        #resDir = os.path.join(baseDir, 'results')
         to_d3js_graph(mapper_output, fn, baseDir, genJson)
         print('Core ran finished! with: {0}'.format(fn))
 
@@ -59,7 +61,7 @@ if __name__=='__main__':
 
 	fn = 'i'+interval+'o'+overlap+'_'+filtKey[3:]
 
-	core_wrapper(data, filt, int(interval), int(overlap), fn)
+	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
 
 
 

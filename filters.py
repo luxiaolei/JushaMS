@@ -68,8 +68,7 @@ class FilterKnowledge:
                     
                     ##construct key name
                     #parse exsiting code name, e.g: 金融资产代码_101 ==> f1_101
-                    key = c.split('_')[-1]
-                    key = 'f1_'+key
+                    key = '_' + c.split('_')[-1]
                     filterDic[key] = arrSVCdis
             elif dim == 2:
                 #2-d filter
@@ -95,7 +94,7 @@ class FilterKnowledge:
                 for k, v in zip(kComb, vComb):
                     v2d = np.vstack((v[0], v[1])).T
                     assert v2d.shape[1] == 2
-                    k2d = 'f2'+ k[0]+ k[1]
+                    k2d = k[0]+ k[1]
                     filterDic[k2d] = v2d
             else:
                 ValueError
