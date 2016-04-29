@@ -10,11 +10,6 @@ import sys
 
 from __init__ import confUser
 from preporcess import Cleaner
-from tools import progressPrinter
-pgPrinter = progressPrinter(0, .2)
-pgPrinter.printStep
-
-
 
 
 if __name__=='__main__':
@@ -33,7 +28,6 @@ if __name__=='__main__':
 	
 	cleaner = Cleaner(confUser)
 	
-	cleaner.startCleaning(maptableDir, usefulCols)
-	cleaner.saveNlog()
+	cleaner.startCleaning()
 
 

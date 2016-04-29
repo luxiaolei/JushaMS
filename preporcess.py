@@ -45,28 +45,52 @@ class Cleaner:
         self.errorTrace = []
         print(self.datain)
 
-        self.pgPrinter = progressPrinter(0, .1)
-        self.pgPrinter.printStep
+        
         
 
         
     
-    def startCleaning(self, mpDir, ucols):
+    def startCleaning(self):
         """
         do the cleannig processes consecutively
         """
+        self.pgPrinter = progressPrinter(-.1, .1)
+        self.pgPrinter.printStep
+
         self._kw2Dfs = self._getDfs(1)
         self.cleanedDf = self._getDfs(0)
         print('Dataframes are ready!')
         self.pgPrinter.printStep
         
+        self.pgPrinter.printStep
+        self.pgPrinter.printStep
         self.__concateNjoin()
         print('Concate done!')
         self.pgPrinter.printStep
+  
+        assert self.cleanedDf.shape[0] > 100  
+        #assert not self.error, print(self.error)
+        self.pgPrinter.printStep
+        #debug
+        if not self.error: print(self.error)
+        
+        fnc = os.path.join(self.datadir, 'cleaned.csv')
+        self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
+        self.pgPrinter.printStep
+        self.pgPrinter.printStep
               
+
+
+    def startTransform(self, mpDir, ucols):
         #start do transfomations, for jushacore
         #fillna with 0, and select useful features
-        self.tranDf = self.cleanedDf.fillna(0)
+        self.pgPrinter = progressPrinter(-.1, .1)
+        self.pgPrinter.printStep
+
+
+        fnc = os.path.join(self.datadir, 'cleaned.csv')
+        cleanedDf = pd.read_csv(fnc)
+        self.tranDf = cleanedDf.fillna(0)
         self.tranDf = self.tranDf.ix[:, ucols]
         print('nan filled and df sub selected!')
         self.pgPrinter.printStep
@@ -82,22 +106,9 @@ class Cleaner:
         self.__standardize()
         print('data standardization done!')
         self.pgPrinter.printStep
-    
-    def saveNlog(self):
-        """
-        save dfs and logging
-        ran this func after startClening()
-        """
-        assert self.cleanedDf.shape[0] > 100 and self.tranDf.shape[0] > 100
-        #assert not self.error, print(self.error)
-        
-        #debug
-        if not self.error: print(self.error)
-        
-        fnc = os.path.join(self.datadir, 'cleaned.csv')
-        self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
-        self.pgPrinter.printStep
-        
+
+        #save to transformed.csv adn uid to uid.csv
+        assert self.tranDf.shape[0] > 100
         fnt = os.path.join(self.datadir, 'transformed.csv')
         self.tranDf.to_csv(fnt, index=False) #set index=False lose uid info
         self.pgPrinter.printStep
@@ -107,27 +118,8 @@ class Cleaner:
         uidf.to_csv(fnid, index=False)
         print('Files are generated!')
         self.pgPrinter.printStep
-        
-        #construct statu json and save it
-        fn_status = os.path.join(self.datadir, 'status.json')
-        #! redandent checker, since error should always empty at this stage
-        if not self.error: #empty
-            status = {
-                'refineDone': True,
-                'resultDone': False,
-                'error': '',
-                'errorTrace': ''
-            }
-        else:
-            status = {
-                'refineDone': True,
-                'resultDone': False,
-                'error': str(self.error),
-                'errorTrace': str(self.errorTrace)
-            }
-            
-        with open(fn_status, 'w') as fs:
-            json.dump(status, fs)
+
+    
          
     def _getDfs(self, p=0):
         """
@@ -178,6 +170,7 @@ class Cleaner:
         try:
             self._kw2Dfs = pd.concat(self._kw2Dfs)
             self.cleanedDf = pd.concat(self.cleanedDf)
+            self.pgPrinter.printStep
         except Exception as e:
             msg = 'error in concating Dataframes process!'
             self.error.append(msg)
@@ -187,6 +180,7 @@ class Cleaner:
         try:
             self.cleanedDf.drop_duplicates(subset='客户代码', inplace= True)
             self._kw2Dfs.drop_duplicates(subset='khdm', inplace= True)
+            self.pgPrinter.printStep
             #self.cleanedDf.set_index('客户代码', drop=True, inplace=True)
             #self._kw2Dfs.set_index('khdm', drop=True, inplace=True)
         except Exception as e:
@@ -197,10 +191,12 @@ class Cleaner:
         #inner join on uid
         try:
             self.cleanedDf = pd.concat([self._kw2Dfs, self.cleanedDf], axis=1, join='inner')
+            self.pgPrinter.printStep
         except Exception as e:
             msg = '无法合并用户画像表以及用户对应机构表'
             self.error.append(msg)
             self.errorTrace.append(e)
+            self.pgPrinter.printStep
     
     def __mapping(self, mpDir):
         """
@@ -211,14 +207,15 @@ class Cleaner:
         for k,v in maptable:
             try:
                 self.tranDf.replace(k,v, inplace=True)
-                
             except Exception as e:
                 msg = '数值映射时发生错误!'
                 self.error.append(msg)
                 self.errorTrace.append(e)
+        self.pgPrinter.printStep
                 
     def __outlierTreat(self):
         self.tranDf['年龄'] = self.tranDf['年龄'].apply(lambda x: x if x < 120 else 120 )
+        self.pgPrinter.printStep
     
     def __standardize(self):
         for k, dtp in enumerate(self.tranDf.dtypes):
@@ -228,12 +225,13 @@ class Cleaner:
                 msg = '尝试标准化数据时，发现有非数字的列: '+ self.tranDf.columns[k]
                 self.error.append(msg)
                 self.errorTrace.append(e)
+        self.pgPrinter.printStep
                 
         from sklearn import preprocessing
         v = preprocessing.StandardScaler().fit_transform(self.tranDf)
         self.tranDf = pd.DataFrame(v, columns=self.tranDf.columns, 
                                index= self.tranDf.index)
-        
+        self.pgPrinter.printStep
     
 #This class respondes for cleanning data used for generating filters 
 class CleanerAnny(Cleaner):

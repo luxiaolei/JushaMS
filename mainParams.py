@@ -1,5 +1,5 @@
 """
-/mainGenparams.py
+/mainParams.py
 
 when called from command line $JUSHAPATH/$: python mainClean.py AbsDatadir
 This script do the following stuff:
