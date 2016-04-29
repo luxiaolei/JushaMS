@@ -78,6 +78,7 @@ class Cleaner:
         self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
         self.pgPrinter.printStep
         self.pgPrinter.printStep
+        self.pgPrinter.printStep
               
 
 
