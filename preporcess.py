@@ -79,6 +79,7 @@ class Cleaner:
         self.pgPrinter.printStep
         self.pgPrinter.printStep
         self.pgPrinter.printStep
+        self.pgPrinter.printStep
               
 
 
@@ -232,7 +233,7 @@ class Cleaner:
         v = preprocessing.StandardScaler().fit_transform(self.tranDf)
         self.tranDf = pd.DataFrame(v, columns=self.tranDf.columns, 
                                index= self.tranDf.index)
-        self.pgPrinter.printStep
+        
     
 #This class respondes for cleanning data used for generating filters 
 class CleanerAnny(Cleaner):

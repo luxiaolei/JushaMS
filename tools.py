@@ -61,7 +61,10 @@ class progressPrinter:
     @property
     def printStep(self):
         self.steps += self.gap
-        print('<<<{0:.2f}>>>'.format(self.steps))
+        if self.step <= 1:
+            print('<<<{0:.2f}>>>'.format(self.steps))
+        else:
+            print('Too many printing man....')
 
 def minNodeDiameter():
     return 100
