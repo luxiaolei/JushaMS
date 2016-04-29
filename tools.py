@@ -61,7 +61,7 @@ class progressPrinter:
     @property
     def printStep(self):
         self.steps += self.gap
-        if self.step <= 1:
+        if self.steps <= 1:
             print('<<<{0:.2f}>>>'.format(self.steps))
         else:
             print('Too many printing man....')
