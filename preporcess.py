@@ -45,8 +45,7 @@ class Cleaner:
         self.errorTrace = []
         print(self.datain)
 
-        self.pgPrinter = progressPrinter(0, .1)
-        self.pgPrinter.printStep
+
         
 
         
@@ -55,6 +54,11 @@ class Cleaner:
         """
         do the cleannig processes consecutively
         """
+        self.pgPrinter = progressPrinter(-.1, .1)
+        self.pgPrinter.printStep
+        self.pgPrinter.printStep
+
+
         self._kw2Dfs = self._getDfs(1)
         self.cleanedDf = self._getDfs(0)
         print('Dataframes are ready!')
@@ -95,7 +99,7 @@ class Cleaner:
         if not self.error: print(self.error)
         
         fnc = os.path.join(self.datadir, 'cleaned.csv')
-        self.cleanedDf.to_csv(fnc)
+        self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
         self.pgPrinter.printStep
         
         fnt = os.path.join(self.datadir, 'transformed.csv')
@@ -108,26 +112,6 @@ class Cleaner:
         print('Files are generated!')
         self.pgPrinter.printStep
         
-        #construct statu json and save it
-        fn_status = os.path.join(self.datadir, 'status.json')
-        #! redandent checker, since error should always empty at this stage
-        if not self.error: #empty
-            status = {
-                'refineDone': True,
-                'resultDone': False,
-                'error': '',
-                'errorTrace': ''
-            }
-        else:
-            status = {
-                'refineDone': True,
-                'resultDone': False,
-                'error': str(self.error),
-                'errorTrace': str(self.errorTrace)
-            }
-            
-        with open(fn_status, 'w') as fs:
-            json.dump(status, fs)
          
     def _getDfs(self, p=0):
         """
@@ -240,30 +224,31 @@ class CleanerAnny(Cleaner):
     """
     Cleaner for cleanning asset_table
     """
-    def __init__(self, confUser, confKw):
+    def __init__(self, confUser, confKw, v=True):
         Cleaner.__init__(self, confUser)
         self.keyword = confKw
 
-        #self.pgPrinter = progressPrinter(0, .25)
-        #self.pgPrinter.printStep
+        self.pgPrinter = progressPrinter(-.002, .002, v)
+        self.pgPrinter.printStep
         
     def startCleaning(self, intresedCode= [107, 101]):
         #read uid.csv into an array
         fnuid = os.path.join(self.datadir, 'uid.csv')
         self.uidArr = pd.read_csv(fnuid).values
         print(self.uidArr.shape[0])
-        #self.pgPrinter.printStep
+        self.pgPrinter.printStep
         
         #read raw files and concate them
         dfList = self._getDfs(p=0)
         assetDf = pd.concat(dfList, axis=0)
         print(assetDf.shape)
-        #self.pgPrinter.printStep
+        self.pgPrinter.printStep
+        self.pgPrinter.printStep
         
         
         assetDf = self.__assetCode(assetDf, intresedCode)
         print(assetDf.shape)
-        #self.pgPrinter.printStep
+        self.pgPrinter.printStep
         return assetDf
     
     def __assetCode(self, assetDf, intresedCode):
@@ -288,7 +273,8 @@ class CleanerAnny(Cleaner):
             if df.shape[0] > 1:
                 row = row.sum(axis= 0)
             row = np.insert(row, 0, uid)
-            dumyFixed.append(row)  
+            dumyFixed.append(row)
+            self.pgPrinter.printStep  
         assetDf_trimed_dummy = pd.DataFrame(dumyFixed, columns=np.insert(col, 0, '核心客户号'))
 
         #construct target dataframe by left join uid and assetDf.

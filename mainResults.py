@@ -5,11 +5,12 @@ from __init__ import confUser
 import pandas as pd
 import pickle as pkl
 import jushacore as mapper 
+from tools import to_d3js_graph, progressPrinter
 import sys
 import os
 
 
-def core_wrapper(data, filt, interval, overlap, fn, genJson= True):
+def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
     """
     class method of class coreWrapper. it recieves inputs required by jushacore as parameters
     and return the result if genJson==False, else write result to fn.
@@ -34,8 +35,6 @@ def core_wrapper(data, filt, interval, overlap, fn, genJson= True):
         import pickle as pkl
         with open('G.pkl', 'wb') as f:
             pkl.dump(mapper_output, f)
-
-        baseDir = datadir
         to_d3js_graph(mapper_output, fn, baseDir, genJson)
         print('Core ran finished! with: {0}'.format(fn))
 
@@ -47,19 +46,29 @@ if __name__=='__main__':
 	filtKey = sys.argv[4]
 	print(type(interval))
 
+    pgPrinter = progressPrinter(-.2, .2)
+    pgPrinter.printStep
+
+
 	dataDir = confUser['DATADIR']
 	dataTransDir = os.path.join(dataDir, 'transformed.csv')
 	data = pd.read_csv(dataTransDir).values
+    pgPrinter.printStep
 
 	filtDir = os.path.join(dataDir, 'filterDic.pkl') 
+    pgPrinter.printStep
 	with open(filtDir, 'rb') as f:
-		filtDic = pkl.load(f)
+	filtDic = pkl.load(f)
 	print(filtDic.keys())
 	filt = filtDic[filtKey]
+    pgPrinter.printStep
 
 	fn = 'i'+interval+'o'+overlap+'_'+filtKey[3:]
 
-	core_wrapper(data, filt, int(interval), int(overlap), fn)
+	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
+    pgPrinter.printStep
+    print('<<<1>>>')
+
 
 
 

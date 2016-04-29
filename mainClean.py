@@ -11,8 +11,7 @@ import sys
 from __init__ import confUser
 from preporcess import Cleaner
 from tools import progressPrinter
-pgPrinter = progressPrinter(0, .2)
-pgPrinter.printStep
+
 
 #inputDir = sys.argv[1]
 #confUser['DATADIR'] = sys.argv[1]
@@ -25,7 +24,7 @@ if __name__=='__main__':
 
 	print(confUser['DATADIR'])
 
-	#confUser['DATADIR'] = sys.argv[1]
+	confUser['DATADIR'] = sys.argv[1]
 
 	maptableDir = 'config/mappingTable.csv'
 	usefulCols = ['性别', '年龄', '婚姻', '学历', '从属行业',
@@ -39,5 +38,6 @@ if __name__=='__main__':
 	
 	cleaner.startCleaning(maptableDir, usefulCols)
 	cleaner.saveNlog()
+	#print('<<<1>>>')
 
 

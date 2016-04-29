@@ -17,7 +17,7 @@ class FilterKnowledge:
     """
     filters which info are extracted from rawdata knowledge
     """
-    def __init__(self, confUser):
+    def __init__(self, confUser, v=True):
         self.confUser = confUser
         self.datadir = self.confUser['DATADIR']
         self.filterDicDir = os.path.join(self.datadir, 'filterDic.pkl')
@@ -25,8 +25,8 @@ class FilterKnowledge:
         fn_dfX = os.path.join(self.datadir, 'transformed.csv')
         self.arrX = pd.read_csv(fn_dfX).values
 
-        self.pgPrinter = progressPrinter(0, .1)
-        #self.pgPrinter.printStep
+        self.pgPrinter = progressPrinter(-.1, .1, v)
+        self.pgPrinter.printStep
         
 
     def assetFilterDic(self, dim= 2 ,intresedCode= [107, 130, 170], genF= True):
@@ -40,14 +40,14 @@ class FilterKnowledge:
         Param genF: if True, gen filters and save to filterDic.pkl
         """
         #generates the intresed Dataframe
-        cleannerAnny = CleanerAnny(self.confUser, ['金融资产'])
-        dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
-        self.pgPrinter.printStep
-
-        maxdim = dfYall.shape[1] -1
-        assert dim <= maxdim
-
         if genF:
+            cleannerAnny = CleanerAnny(self.confUser, ['金融资产'], v=False)
+            dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
+            self.pgPrinter.printStep
+            print(dfYall.shape, 'current dfYall shape ')
+
+            maxdim = dfYall.shape[1] -1
+            assert dim <= maxdim
             #save filtDic to pkl
             return self.__genDic(dim, dfYall)
             self.pgPrinter.printStep
@@ -59,7 +59,7 @@ class FilterKnowledge:
 
     def __genDic(self, dim, dfYall):
             filterDic = {}
-            if dim ==1:
+            def F1d(self):
                 #1-d filter
                 for c in dfYall.columns[1:]: #exclude uid column
                     ##construct value
@@ -69,10 +69,13 @@ class FilterKnowledge:
                     ##construct key name
                     #parse exsiting code name, e.g: 金融资产代码_101 ==> f1_101
                     key = c.split('_')[-1]
-                    key = 'f1_'+key
+                    key = '_'+key
                     filterDic[key] = arrSVCdis
+            if dim ==1:
+                F1d(self)
             elif dim == 2:
                 #2-d filter
+                F1d(self) #add 1-d filter first
                 cs = dfYall.columns[1:3].values
                 
                 ks, vs = [], []
@@ -95,7 +98,7 @@ class FilterKnowledge:
                 for k, v in zip(kComb, vComb):
                     v2d = np.vstack((v[0], v[1])).T
                     assert v2d.shape[1] == 2
-                    k2d = 'f2'+ k[0]+ k[1]
+                    k2d = k[0]+ k[1]
                     filterDic[k2d] = v2d
             else:
                 ValueError

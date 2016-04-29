@@ -55,13 +55,17 @@ def genIODic(interval, overlap):
 
 
 class progressPrinter:
-    def __init__(self, previousStep, gap):
+    def __init__(self, previousStep, gap, v=True):
         self.steps = previousStep
         self.gap = gap
+        self.v = v
     @property
     def printStep(self):
-        self.steps += self.gap
-        print('<<<{0:.2f}>>>'.format(self.steps))
+        if self.v:
+            self.steps += self.gap
+            if self.steps < 1.:
+                assert self.steps < 1
+                print('<<<{0:.2f}>>>'.format(self.steps))
 
 def minNodeDiameter():
     return 100
