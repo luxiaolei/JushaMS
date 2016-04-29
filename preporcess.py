@@ -89,13 +89,13 @@ class Cleaner:
         ran this func after startClening()
         """
         assert self.cleanedDf.shape[0] > 100 and self.tranDf.shape[0] > 100
-        assert not self.error
+        #assert not self.error, print(self.error)
         
         #debug
         if not self.error: print(self.error)
         
         fnc = os.path.join(self.datadir, 'cleaned.csv')
-        self.cleanedDf.to_csv(fnc)
+        self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
         self.pgPrinter.printStep
         
         fnt = os.path.join(self.datadir, 'transformed.csv')
@@ -183,12 +183,12 @@ class Cleaner:
             self.error.append(msg)
             self.errorTrace.append(e)
 
-        #drop duplicated user id, and set uid to be index
+        #drop duplicated user id, #and set uid to be index
         try:
             self.cleanedDf.drop_duplicates(subset='客户代码', inplace= True)
             self._kw2Dfs.drop_duplicates(subset='khdm', inplace= True)
-            self.cleanedDf.set_index('客户代码', drop=True, inplace=True)
-            self._kw2Dfs.set_index('khdm', drop=True, inplace=True)
+            #self.cleanedDf.set_index('客户代码', drop=True, inplace=True)
+            #self._kw2Dfs.set_index('khdm', drop=True, inplace=True)
         except Exception as e:
             msg = 'error in drop_duplicate uid and set_index processes!'
             self.error.append(msg)
@@ -328,4 +328,5 @@ if __name__=="__main__":
 
     cleannerAnny = CleanerAnny(confUser, ['金融资产'])
     print(cleannerAnny.startCleaning().shape)
+
 

@@ -1,1 +1,1 @@
-{"refineDone": true, "error": "", "errorTrace": "", "resultDone": false}
+{"refineDone": true, "resultDone": false, "errorTrace": "[ValueError('Shape of passed values is (41, 67955), indices imply (41, 11627)',)]", "error": "['\u65e0\u6cd5\u5408\u5e76\u7528\u6237\u753b\u50cf\u8868\u4ee5\u53ca\u7528\u6237\u5bf9\u5e94\u673a\u6784\u8868']"}
