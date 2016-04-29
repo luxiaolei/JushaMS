@@ -120,7 +120,10 @@ class Cleaner:
         uidf.to_csv(fnid, index=False)
         print('Files are generated!')
         self.pgPrinter.printStep
+        self.pgPrinter.printStep
 
+        self.pgPrinter.printStep
+        self.pgPrinter.printStep
     
          
     def _getDfs(self, p=0):
