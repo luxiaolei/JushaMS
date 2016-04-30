@@ -194,7 +194,7 @@ class cube_cover_primitive (_generic_cover):
             return self
         else:
             interval_scalar = self.intervals[0]
-            self.iter = zigzag(interval) #generator
+            self.iter = zigzag(interval_scalar) #generator
             return self
 
 

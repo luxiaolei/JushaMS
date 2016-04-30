@@ -24,7 +24,7 @@ def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
 
     mapper_output = mapper.jushacore(data, filt, cover=cover,\
                              cutoff=None, cluster=cluster,\
-                             metricpar=metricpar, verbose=False)
+                             metricpar=metricpar, verbose=True)
     mapper.scale_graph(mapper_output, filt, cover=cover, weighting='inverse',\
                   exponent=1, verbose=False)
     if mapper_output.stopFlag:
@@ -41,6 +41,7 @@ def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
 
 if __name__=='__main__':
 	
+	#dataDir = 'data/tempdir'# sys.argv[1]
 	dataDir = sys.argv[1]
 	interval = sys.argv[2]
 	overlap = sys.argv[3]
