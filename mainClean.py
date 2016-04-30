@@ -48,7 +48,7 @@ if __name__=='__main__':
 	dfYallcsv = os.path.join(confUser['DATADIR'], 'dfYall.csv')
 	dfYall.to_csv(dfYallcsv, index=False)
 
-	cleanedDf = pd.merge(cleanner.cleanedDf, dfYall, on='uid')
+	cleanedDf = pd.merge(cleaner.cleanedDf, dfYall, on='uid')
 	fnc = os.path.join(confUser['DATADIR'], 'cleaned.csv')
 	cleanedDf.to_csv(fnc, index=False)
 	
