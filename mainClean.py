@@ -9,7 +9,7 @@ This script do the following stuff:
 import sys
 
 from __init__ import confUser
-from preporcess import Cleaner, CleannerAnny
+from preporcess import Cleaner, CleanerAnny
 from tools import progressPrinter
 import pandas as pd
 
