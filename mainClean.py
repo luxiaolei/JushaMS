@@ -39,7 +39,7 @@ if __name__=='__main__':
 	
 	cleaner.startCleaning(maptableDir, usefulCols)
 
-	cleannerAnny = CleanerAnny(self.confUser, ['金融资产'], v=False)
+	cleannerAnny = CleanerAnny(confUser, ['金融资产'], v=False)
 	dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
 	dfYall.rename(columns={'核心客户号':'uid'},inplace=True)
 
