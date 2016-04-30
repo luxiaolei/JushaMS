@@ -30,7 +30,7 @@ if __name__=='__main__':
 
 	#check is filtDic.pkl exist first
 	filtdir = os.path.join(confUser['DATADIR'], 'filterDic.pkl')
-	while true:
+	while True:
 		if os.path.isfile(filtdir):
 
 			Filter = FilterKnowledge(confUser, v=False)

@@ -37,6 +37,13 @@ __all__ = ['cube_cover_primitive', 'balanced_cover_1d', 'subrange_decomposition_
 intervals_default = 10
 overlap_default = 50
 
+#xl_add, zigzag function
+def zigzag(n):
+    indexorder = sorted(((x,y) for x in range(n) for y in range(n)),
+                    key = lambda (x,y): (x+y, -y if (x+y) % 2 else y) )
+    for level in indexorder:
+        yield level
+
 class level:
     '''
     Data structure for a filter level.
@@ -180,8 +187,16 @@ class cube_cover_primitive (_generic_cover):
             ( self.intervals - (self.intervals-1)*self.fract_overlap )
         self.step_size = self.interval_length*(1-self.fract_overlap)
 
-        self.iter = itertools.product(*(range(i) for i in self.intervals))
-        return self
+        #xl_add, zigzag way to loop levels for 2-d filters
+        if len(self.intervals) != 2: 
+            #origin
+            self.iter = itertools.product(*(range(i) for i in self.intervals))
+            return self
+        else:
+            interval_scalar = self.intervals[0]
+            self.iter = zigzag(interval) #generator
+            return self
+
 
     def _minmax(self, index):
         range_min = self.min + index * self.step_size
