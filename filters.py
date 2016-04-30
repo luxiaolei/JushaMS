@@ -44,7 +44,12 @@ class FilterKnowledge:
             #cleannerAnny = CleanerAnny(self.confUser, ['金融资产'], v=False)
             #dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
             dfYallcsv = os.path.join(self.confUser['DATADIR'], 'dfYall.csv')
-            dfYall = pd.read_csv(dfYallcsv)
+            import time
+            for i in range(100):
+                if os.path.isfile(dfYallcsv):
+                    dfYall = pd.read_csv(dfYallcsv)
+                else:
+                    time.sleep(.5)
 
             self.pgPrinter.printStep
             print(dfYall.shape, 'current dfYall shape ')
