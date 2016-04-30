@@ -738,7 +738,7 @@ class jusha_output:
                                                      num_nodes_path):
 
             #xl_add, kill process when number of nodes > 1/2 of data points
-            if self.num_nodes >= filt.shape[0] / 2:
+            if self.num_nodes >= filt.shape[0] :#/ 2:
                 self.stopFlag = True
                 print('Too many nodes! nodes count in current loop : {0}, out of {1} half'.format(self.num_nodes, filt.shape[0] / 2))
                 raise Exception('Too many nodes error!')
