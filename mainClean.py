@@ -40,7 +40,7 @@ if __name__=='__main__':
 	cleaner.startCleaning(maptableDir, usefulCols)
 
 	cleannerAnny = CleanerAnny(confUser, ['金融资产'], v=False)
-	dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
+	dfYall = cleannerAnny.startCleaning(intresedCode= [107, 130, 170])
 	dfYall.rename(columns={'核心客户号':'uid'},inplace=True)
 
 	dfYallcsv = os.path.join(confUser['DATADIR'], 'dfYall.csv')
