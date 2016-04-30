@@ -741,6 +741,7 @@ class jusha_output:
             if self.num_nodes >= filt.shape[0] / 2:
                 self.stopFlag = True
                 print('Too many nodes! nodes count in current loop : {0}, out of {1} half'.format(self.num_nodes, filt.shape[0] / 2))
+                raise Exception('Too many nodes error!')
                 break
             
 

@@ -51,7 +51,7 @@ if __name__=='__main__':
 	sys.stdout.flush()
 
 
-	dataDir = confUser['DATADIR']
+	#dataDir = confUser['DATADIR']
 	dataTransDir = os.path.join(dataDir, 'transformed.csv')
 	data = pd.read_csv(dataTransDir).values
 	pgPrinter.printStep
@@ -60,6 +60,8 @@ if __name__=='__main__':
 	filtDir = os.path.join(dataDir, 'filterDic.pkl') 
 	pgPrinter.printStep
 	sys.stdout.flush()
+
+	print(filtDir)
 
 	with open(filtDir, 'rb') as f:
 		filtDic = pkl.load(f)
