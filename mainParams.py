@@ -12,6 +12,7 @@ from json import dump
 import sys
 import os
 from tools import progressPrinter
+import time
 
 if __name__=='__main__':
 	confUser['DATADIR'] = sys.argv[1]
@@ -27,25 +28,33 @@ if __name__=='__main__':
 	pgPrinter.printStep
 	sys.stdout.flush()
 
-	Filter = FilterKnowledge(confUser, v=False)
-	filterDic = Filter.assetFilterDic(dim= 2 ,intresedCode= [107, 130, 170], genF= False)
-	print('Construct filters Dictionary done!')
-	pgPrinter.printStep
-	sys.stdout.flush()
+	#check is filtDic.pkl exist first
+	filtdir = os.path.join(confUser['DATADIR'], 'filterDic.pkl')
+	while true:
+		if os.path.isfile(filtdir):
 
-	paramsForGenjson=[]
-	for kp, vp in ioDic.items():
-		for kf, vf in filterDic.items():
-			epoch = { 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf }
-			paramsForGenjson.append(epoch)
+			Filter = FilterKnowledge(confUser, v=False)
+			filterDic = Filter.assetFilterDic(dim= 2 ,intresedCode= [107, 130, 170], genF= False)
+			print('Construct filters Dictionary done!')
 			pgPrinter.printStep
-	print('Construct paramters for the next step is done!')
-	pgPrinter.printStep
-	sys.stdout.flush()
+			sys.stdout.flush()
 
-	paramsDicDir = os.path.join(confUser['DATADIR'], 'params.json')
-	with open(paramsDicDir, 'w') as f:
-		dump(paramsForGenjson, f)
-	print('<<<1>>>')
-	
+			paramsForGenjson=[]
+			for kp, vp in ioDic.items():
+				for kf, vf in filterDic.items():
+					epoch = { 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf }
+					paramsForGenjson.append(epoch)
+					pgPrinter.printStep
+			print('Construct paramters for the next step is done!')
+			pgPrinter.printStep
+			sys.stdout.flush()
+
+			paramsDicDir = os.path.join(confUser['DATADIR'], 'params.json')
+			with open(paramsDicDir, 'w') as f:
+				dump(paramsForGenjson, f)
+			print('<<<1>>>')
+			break
+		else:
+			time.sleep(.5)
+		
 
