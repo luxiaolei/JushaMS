@@ -43,12 +43,13 @@ if __name__=='__main__':
 	cleaner.saveNlog()
 
 	dfYall = cleannerAnny.startCleaning(intresedCode= [107, 130, 170])
-	dfYall.rename(columns={'核心客户号':'uid'},inplace=True)
+	#dfYall.rename(columns={'核心客户号':'jgmc'},inplace=True)
 
 	dfYallcsv = os.path.join(confUser['DATADIR'], 'dfYall.csv')
 	dfYall.to_csv(dfYallcsv, index=False)
-
-	cleanedDf = pd.merge(cleaner.cleanedDf, dfYall, on='uid')
+ 	#cleaner.cleanedDf['核心客户号'] = cleaner.cleanedDf.index
+	cleaner.cleanedDf['核心客户号'] = cleaner.cleanedDf.index.values
+	cleanedDf = pd.merge(cleaner.cleanedDf, dfYall, on='核心客户号')
 	fnc = os.path.join(confUser['DATADIR'], 'cleaned.csv')
 	cleanedDf.to_csv(fnc, index=False)
 	
