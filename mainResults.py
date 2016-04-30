@@ -40,34 +40,34 @@ def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
 
 
 if __name__=='__main__':
+	
 	dataDir = sys.argv[1]
 	interval = sys.argv[2]
 	overlap = sys.argv[3]
 	filtKey = sys.argv[4]
 	print(type(interval))
-
-    pgPrinter = progressPrinter(-.2, .2)
-    pgPrinter.printStep
+	pgPrinter = progressPrinter(-.2, .2)
+	pgPrinter.printStep
 
 
 	dataDir = confUser['DATADIR']
 	dataTransDir = os.path.join(dataDir, 'transformed.csv')
 	data = pd.read_csv(dataTransDir).values
-    pgPrinter.printStep
+	pgPrinter.printStep
 
 	filtDir = os.path.join(dataDir, 'filterDic.pkl') 
-    pgPrinter.printStep
+	pgPrinter.printStep
 	with open(filtDir, 'rb') as f:
-	filtDic = pkl.load(f)
+		filtDic = pkl.load(f)
 	print(filtDic.keys())
 	filt = filtDic[filtKey]
-    pgPrinter.printStep
+	pgPrinter.printStep
 
 	fn = 'i'+interval+'o'+overlap+'_'+filtKey[3:]
 
 	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
-    pgPrinter.printStep
-    print('<<<1>>>')
+	pgPrinter.printStep
+	print('<<<1>>>')
 
 
 
