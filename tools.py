@@ -1,6 +1,7 @@
 
 import jushacore as mapper 
 import numpy as np
+from scipy.spatial.distance import pdist
 import json
 import pickle as pkl
 import os
@@ -23,8 +24,12 @@ def to_d3js_graph(mapper_output, fn, baseDir, genJson):
     pos_dic = {}
     for node_index, pos in zip(vertices, vertex_pos):
         pos_dic[node_index] = pos
+
+    minDis = pdist(vertex_pos)
+    diam = minDis[np.argmin(minDis)] / 2.
     
     G = {}
+    G['diam'] = diam
     G['vertices'] = [{'index': i, 
                       'members': [int(i) for i in list(n.points)], 
                       'attribute': n.attribute, 
