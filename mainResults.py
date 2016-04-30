@@ -70,7 +70,7 @@ if __name__=='__main__':
 	pgPrinter.printStep
 	sys.stdout.flush()
 
-	fn = 'i'+interval+'o'+overlap+'_'+filtKey[3:]
+	fn = 'i'+interval+'o'+overlap+filtKey
 
 	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
 	pgPrinter.printStep
