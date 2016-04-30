@@ -40,7 +40,7 @@ overlap_default = 50
 #xl_add, zigzag function
 def zigzag(n):
     indexorder = sorted(((x,y) for x in range(n) for y in range(n)),
-                    key = lambda (x,y): (x+y, -y if (x+y) % 2 else y) )
+                    key = lambda xy: (xy[0]+xy[1], -xy[1] if (xy[0]+xy[1]) % 2 else xy[1]) )
     for level in indexorder:
         yield level
 
