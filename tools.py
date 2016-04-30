@@ -25,8 +25,8 @@ def to_d3js_graph(mapper_output, fn, baseDir, genJson):
     for node_index, pos in zip(vertices, vertex_pos):
         pos_dic[node_index] = pos
 
-    minDis = pdist(vertex_pos)
-    diam = minDis[np.argmin(minDis)] / 2.
+    minDis = pdist(vertex_pos).min()
+    diam = minDis / 2.
     
     G = {}
     G['diam'] = diam
