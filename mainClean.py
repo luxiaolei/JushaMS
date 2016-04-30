@@ -9,8 +9,9 @@ This script do the following stuff:
 import sys
 
 from __init__ import confUser
-from preporcess import Cleaner
+from preporcess import Cleaner, CleannerAnny
 from tools import progressPrinter
+import pandas as pd
 
 
 #inputDir = sys.argv[1]
