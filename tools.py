@@ -4,6 +4,7 @@ import numpy as np
 import json
 import pickle as pkl
 import os
+import sys
 
 def to_d3js_graph(mapper_output, fn, baseDir, genJson):
     """
@@ -66,6 +67,7 @@ class progressPrinter:
             if self.steps < 1.:
                 assert self.steps < 1
                 print('<<<{0:.2f}>>>'.format(self.steps))
+                sys.stdout.flush()
 
 def minNodeDiameter():
     return 100

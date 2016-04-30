@@ -20,15 +20,18 @@ if __name__=='__main__':
 
 	pgPrinter = progressPrinter(-.2, .2)
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 	ioDic = genIODic(interval, overlap)
 	print('Construct iterval and overlap mesh grid done!')
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 	Filter = FilterKnowledge(confUser, v=False)
 	filterDic = Filter.assetFilterDic(dim= 2 ,intresedCode= [107, 130, 170], genF= False)
 	print('Construct filters Dictionary done!')
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 	paramsForGenjson=[]
 	for kp, vp in ioDic.items():
@@ -38,6 +41,7 @@ if __name__=='__main__':
 			pgPrinter.printStep
 	print('Construct paramters for the next step is done!')
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 	paramsDicDir = os.path.join(confUser['DATADIR'], 'params.json')
 	with open(paramsDicDir, 'w') as f:

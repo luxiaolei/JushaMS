@@ -48,25 +48,31 @@ if __name__=='__main__':
 	print(type(interval))
 	pgPrinter = progressPrinter(-.2, .2)
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 
 	dataDir = confUser['DATADIR']
 	dataTransDir = os.path.join(dataDir, 'transformed.csv')
 	data = pd.read_csv(dataTransDir).values
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 	filtDir = os.path.join(dataDir, 'filterDic.pkl') 
 	pgPrinter.printStep
+	sys.stdout.flush()
+
 	with open(filtDir, 'rb') as f:
 		filtDic = pkl.load(f)
 	print(filtDic.keys())
 	filt = filtDic[filtKey]
 	pgPrinter.printStep
+	sys.stdout.flush()
 
 	fn = 'i'+interval+'o'+overlap+'_'+filtKey[3:]
 
 	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
 	pgPrinter.printStep
+	sys.stdout.flush()
 	print('<<<1>>>')
 
 
