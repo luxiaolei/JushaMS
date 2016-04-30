@@ -41,8 +41,11 @@ class FilterKnowledge:
         """
         #generates the intresed Dataframe
         if genF:
-            cleannerAnny = CleanerAnny(self.confUser, ['金融资产'], v=False)
-            dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
+            #cleannerAnny = CleanerAnny(self.confUser, ['金融资产'], v=False)
+            #dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
+            dfYallcsv = os.path.join(self.confUser['DATADIR'], 'dfYall.csv')
+            dfYall = pd.read_csv(dfYallcsv)
+
             self.pgPrinter.printStep
             print(dfYall.shape, 'current dfYall shape ')
 

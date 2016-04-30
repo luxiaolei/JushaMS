@@ -34,7 +34,7 @@ if __name__=='__main__':
 		if os.path.isfile(filtdir):
 
 			Filter = FilterKnowledge(confUser, v=False)
-			filterDic = Filter.assetFilterDic(dim= 2 ,intresedCode= [107, 130, 170], genF= False)
+			filterDic = Filter.assetFilterDic(dim= 1 ,intresedCode= [107, 130, 170], genF= False)
 			print('Construct filters Dictionary done!')
 			pgPrinter.printStep
 			sys.stdout.flush()

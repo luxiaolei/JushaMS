@@ -37,7 +37,15 @@ if __name__=='__main__':
 	cleaner = Cleaner(confUser)
 	
 	cleaner.startCleaning(maptableDir, usefulCols)
-	cleaner.saveNlog()
-	#print('<<<1>>>')
 
+	cleannerAnny = CleanerAnny(self.confUser, ['金融资产'], v=False)
+	dfYall = cleannerAnny.startCleaning(intresedCode= intresedCode)
+	dfYall.rename(columns={'核心客户号':'uid'},inplace=True)
+
+	dfYallcsv = os.path.join(confUser['DATADIR'], 'dfYall.csv')
+	dfYall.to_csv(dfYallcsv, index=False)
+
+	cleanner.cleanedDf = pd.merge(cleanner.cleanedDf, dfYall, on='uid')
+	#print('<<<1>>>')
+	cleaner.saveNlog()
 
