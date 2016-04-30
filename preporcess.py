@@ -98,8 +98,8 @@ class Cleaner:
         #debug
         if not self.error: print(self.error)
         
-        fnc = os.path.join(self.datadir, 'cleaned.csv')
-        self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
+        #fnc = os.path.join(self.datadir, 'cleaned.csv')
+        #self.cleanedDf.to_csv(fnc, index=True, index_label='uid')
         self.pgPrinter.printStep
         
         fnt = os.path.join(self.datadir, 'transformed.csv')
