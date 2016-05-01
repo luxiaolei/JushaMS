@@ -121,14 +121,15 @@ class FilterKnowledge:
         from sklearn import svm
         #arrY = np.random.random(arrX.shape[0])
         
-        clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma='auto')
+        clf = svm.SVC(C=16 , kernel="rbf", gamma='auto')
         self.pgPrinter.printStep
         
-        clf.fit(arrX)
+        clf.fit(arrX, arrY)
         self.pgPrinter.printStep
 
-        dis2hyperplane = clf.decision_function(arrX).T[0]
+        dis2hyperplane = clf.decision_function(arrX)
         self.pgPrinter.printStep
+        print('filter: dis2hyperplane, shape:', dis2hyperplane.shape)
 
         #implement cross validates
         return dis2hyperplane
