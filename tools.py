@@ -40,7 +40,7 @@ def to_d3js_graph(mapper_output, fn, baseDir, genJson):
                    S[1][e]} for e in S[1].keys()]
     
     if genJson:
-        baseDir = os.path.join(baseDir,'results')
+        #baseDir = os.path.join(baseDir,'results')
         fpath = os.path.join(baseDir, fn)
         with open(fpath+'.json', 'w') as f:
             json.dump(G, f)
