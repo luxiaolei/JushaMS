@@ -31,7 +31,7 @@ class coreWrapper:
         """
         self.interval = confUser['interval']
         self.overlap = confUser['overlap']
-        self.datadir = os.path.join(confUser['DATADIR'], 'result')
+        self.datadir = os.path.join(confUser['DATADIR'], 'results')
         pass
     
   
@@ -86,8 +86,7 @@ class coreWrapper:
             with open('G.pkl', 'wb') as f:
                 pkl.dump(mapper_output, f)
 
-            baseDir = self.datadir
-            to_d3js_graph(mapper_output, fn, baseDir, genJson)
+            to_d3js_graph(mapper_output, fn, self.datadir, genJson)
             print('Core ran finished! with: {0}'.format(fn))
             #return mapper_output
     
