@@ -121,7 +121,7 @@ class FilterKnowledge:
         from sklearn import svm
         #arrY = np.random.random(arrX.shape[0])
         
-        clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
+        clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma='auto')
         self.pgPrinter.printStep
         
         clf.fit(arrX)
