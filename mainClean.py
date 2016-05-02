@@ -12,6 +12,7 @@ from __init__ import confUser
 from preporcess import Cleaner, CleanerAnny
 from tools import progressPrinter
 import pandas as pd
+import numpy as np
 import os
 
 #inputDir = sys.argv[1]
