@@ -25,7 +25,7 @@ if __name__=='__main__':
 
 	print(confUser['DATADIR'])
 
-	confUser['DATADIR'] = 'data/tempdir' #sys.argv[1]
+	confUser['DATADIR'] = sys.argv[1]
 
 	maptableDir = 'config/mappingTable.csv'
 	usefulCols = ['性别', '年龄', '婚姻', '学历', '从属行业',
