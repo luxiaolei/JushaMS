@@ -20,7 +20,7 @@ if __name__=='__main__':
 	confUser['DATADIR'] = inputDir
 	print(confUser['DATADIR'])
 	Filter = FilterKnowledge(confUser)
-	Filter.assetFilterDic(dim= 2 ,intresedCode= [107, 130, 170], genF= True)
+	Filter.assetFilterDic(dim= 1 ,intresedCode= [107, 130, 170], genF= True)
 	#print('<<<1>>>')
 
 
