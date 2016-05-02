@@ -72,6 +72,7 @@ if __name__=='__main__':
 	sys.stdout.flush()
 
 	fn = 'i'+interval+'o'+overlap+filtKey
+	dataDir = os.path.join(dataDir, 'results')
 
 	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
 	pgPrinter.printStep

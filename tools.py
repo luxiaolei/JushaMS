@@ -27,6 +27,8 @@ def to_d3js_graph(mapper_output, fn, baseDir, genJson):
 
     minDis = pdist(vertex_pos).min()
     diam = minDis / 2.
+    assert (diam >0 , 'min diameter has to larger than zero!')
+    print('diam:', diam)
     
     G = {}
     G['diam'] = diam
