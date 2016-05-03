@@ -20,8 +20,8 @@ confUser = {
 	'DELI' : '|',
 	'KEYWORD' : '客户画像,对应机构', #used by in transformation proprecess
 	'ENCODING' : 'gb18030', #? redundent
-    "interval" : np.arange(10, 30, 5),
-    "overlap" : np.arange(55, 85, 5)
+    "interval" : np.arange(20, 100, 5),
+    "overlap" : np.arange(80, 85, 5)
 }
 
 """
