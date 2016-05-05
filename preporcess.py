@@ -214,7 +214,7 @@ class Cleaner:
                 self.errorTrace.append(e)
                 
         from sklearn import preprocessing
-        v = preprocessing.StandardScaler().fit_transform(self.tranDf)
+        v = preprocessing.MinMaxScaler().fit_transform(self.tranDf)
         self.tranDf = pd.DataFrame(v, columns=self.tranDf.columns, 
                                index= self.tranDf.index)
         

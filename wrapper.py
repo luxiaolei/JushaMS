@@ -135,7 +135,7 @@ if __name__=='__main__':
     KnowlgeF = FilterKnowledge(confUser)
     
     coreWrapper = coreWrapper(confUser)
-    coreWrapper.assetStartWrapping(KnowlgeF, dim=2, intresedCode= [107, 130]) #107，130，170
+    coreWrapper.assetStartWrapping(KnowlgeF, dim=2, intresedCode= [107, 130, 107]) #107，130，170
 
     t1 = time.time()
     print('for 11596,26 data, Dimension {0}, total time cost {1} s'.format(2, t1-t0))
