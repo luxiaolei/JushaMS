@@ -29,7 +29,7 @@ class FilterKnowledge:
         self.pgPrinter.printStep
         
 
-    def assetFilterDic(self, dim= 2 ,intresedCode= [107, 130, 170], genF= True):
+    def assetFilterDic(self, dim= 1 ,intresedCode= [107, 130, 170], genF= True):
         """
         Returns a dic of filters. 
         keys:f1_107 for dim=1,  f2_107_101 for dim=2.

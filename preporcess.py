@@ -263,6 +263,9 @@ class CleanerAnny(Cleaner):
         #make sure assetDf's uid is the subset of userimage's uid.
         assetDf_trimed = assetDf.ix[assetDf['核心客户号'].isin(self.uidArr.ravel()), :]
 
+        #type convert
+        assetDf_trimed['金融资产代码'] = assetDf_trimed['金融资产代码'].astype(np.int)
+
         #dummy coded and compress alone uid column(so that uids are distict)
         assetDf_trimed_dummy = pd.get_dummies(assetDf_trimed, columns=['金融资产代码'])
         dumyFixed = []
