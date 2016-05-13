@@ -65,7 +65,7 @@ class Cleaner:
         self.pgPrinter.printStep
         
         self.__concateNjoin()
-        print('Concate done!')
+        print('Concate done!????')
         self.pgPrinter.printStep
               
         #start do transfomations, for jushacore
@@ -93,7 +93,7 @@ class Cleaner:
         ran this func after startClening()
         """
         assert self.cleanedDf.shape[0] > 100 and self.tranDf.shape[0] > 100
-        assert not self.error
+        assert (not self.error, print(self.error))
         
         #debug
         if not self.error: print(self.error)
@@ -107,7 +107,7 @@ class Cleaner:
         self.pgPrinter.printStep
         
         fnid = os.path.join(self.datadir, 'uid.csv')
-        uidf = pd.DataFrame(self.tranDf.index, columns=['uid'])
+        uidf = pd.DataFrame(self.tranDf.index.values, columns=['uid'])
         uidf.to_csv(fnid, index=False)
         print('Files are generated!')
         self.pgPrinter.printStep
@@ -180,7 +180,9 @@ class Cleaner:
             
         #inner join on uid
         try:
-            self.cleanedDf = pd.concat([self._kw2Dfs, self.cleanedDf], axis=1, join='inner')
+            if self._kw2Dfs.shape[0]*1.2 > self.cleanedDf.shape[0]:
+                print(self._kw2Dfs.shape, 'Org shape!')
+                self.cleanedDf = pd.concat([self._kw2Dfs, self.cleanedDf], axis=1, join='inner')
         except Exception as e:
             msg = '无法合并用户画像表以及用户对应机构表'
             self.error.append(msg)
@@ -192,6 +194,11 @@ class Cleaner:
         """
         maptable = pd.read_csv(mpDir, header=None)#, encoding='gbk')
         maptable = maptable.ix[:, :1].values
+        maptable = np.vstack((maptable, 
+            ['科学研究、技术服务和地质勘探业', 3],
+            ['非储中贵金属偏好', 3],
+            ['商铺按揭,住房按揭', 3],
+            ['其他消费类,消费型微', 3]))
         for k,v in maptable:
             try:
                 self.tranDf.replace(k,v, inplace=True)
@@ -205,6 +212,7 @@ class Cleaner:
         self.tranDf['年龄'] = self.tranDf['年龄'].apply(lambda x: x if x < 120 else 120 )
     
     def __standardize(self):
+        problemCols = []
         for k, dtp in enumerate(self.tranDf.dtypes):
             try:
                 assert dtp == np.int or dtp == np.float
@@ -212,7 +220,21 @@ class Cleaner:
                 msg = '尝试标准化数据时，发现有非数字的列: '+ self.tranDf.columns[k]
                 self.error.append(msg)
                 self.errorTrace.append(e)
-                
+                problemCols.append(k)
+                print(e)
+
+        if not problemCols:
+            #hard set those strings to 3
+            for row, Sr in enumerate(self.tranDf.ix[:, problemCols].values):
+                for col, cell in enumerate(Sr):
+                    try:
+                        float(cell)
+                    except Exception:
+                        print(cell)
+                        self.tranDf.iloc[row, col] = 3
+
+
+        
         from sklearn import preprocessing
         v = preprocessing.MinMaxScaler().fit_transform(self.tranDf)
         self.tranDf = pd.DataFrame(v, columns=self.tranDf.columns, 
