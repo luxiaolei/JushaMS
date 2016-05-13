@@ -84,6 +84,7 @@ class FilterKnowledge:
             elif dim == 2:
                 #2-d filter
                 F1d(self) #add 1-d filter first
+                print('I am generating 2-D fiters!')
                 cs = dfYall.columns[1:3].values
                 
                 ks, vs = [], []
