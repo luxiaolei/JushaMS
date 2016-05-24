@@ -219,7 +219,7 @@ if __name__=='__main__':
         svmfilter, SimilarityArr, ranksArr = wrapper(dfX, dfYs[target])
         name = '_'+target[1:]
         FilterDic[name] = svmfilter
-        Cleandf['Rank'+name] = ranksArr
+        #Cleandf['Rank'+name] = ranksArr
         
         #generates Similarity for each asset
         fn_similarity = os.path.join(dataDir, name+'_data.pkl')
