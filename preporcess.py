@@ -128,7 +128,7 @@ class Cleaner:
                     paths.append(fnPath)
         
         #read_csv and catch errors
-        assert len(paths)> 1
+        assert len(paths)>= 1
         dfs = []
         for k, fn in enumerate(paths):
             try:
