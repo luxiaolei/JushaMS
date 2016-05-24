@@ -56,6 +56,7 @@ from scipy.spatial.distance import pdist
 from scipy.stats import randint as sp_randint
 from operator import itemgetter
 from __init__ import useFullFeatures
+from multiprocessing import cpu_count
 
 import pickle as pkl
 import numpy as np
@@ -135,8 +136,9 @@ def ModelSelection(X, Y, clf, param_dist, n_iter_search = 20):
     clf - with best params, fitted with X,Y
     f1_meanScore - mean f1 score associated with the best params
     """
+    cores = cpu_count()
     random_search = RandomizedSearchCV(clf, param_distributions=param_dist,
-                                       n_iter=n_iter_search, scoring='f1')
+                                       n_iter=n_iter_search, scoring='f1', n_jobs= cores)
     random_search.fit(X, Y)
     params, mean, scores = sorted(random_search.grid_scores_, key=itemgetter(1), reverse=True)[0]
     clf.set_params(**params)
