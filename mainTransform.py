@@ -170,7 +170,7 @@ def wrapper(dfX, dfY):
     ###############################################################################
     ##After Anonva-SVM feature selection, Select the best model for RF
     ##Then, generates Similarity Array and Ranking
-    RFclf = RandomForestClassifier()
+    RFclf = RandomForestClassifier(n_jobs=-1)
 
     # specify parameters and distributions to sample from
     RFparam_dist = {'n_estimators': np.concatenate((np.arange(20, 200, 30), np.arange(200, 1000, 150))),
