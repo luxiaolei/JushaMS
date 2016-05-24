@@ -103,7 +103,7 @@ def FeatureSelection_Pipline(dfX, dfY, estimator, thlhdv = 0.98, scale=False):
     score_means = list()
     score_stds = list()
     score_maxs = list()
-    percentiles = (1, 3, 6, 10, 15, 20, 30, 40, 60, 80, 100)
+    percentiles = (1, 3, 6, 10, 15, 20, 40, 60, 100)
 
     for percentile in percentiles:
         clf.set_params(anova__percentile=percentile)
@@ -120,7 +120,7 @@ def FeatureSelection_Pipline(dfX, dfY, estimator, thlhdv = 0.98, scale=False):
     selectedCols = X_sel_cols[selectedMask]
     return dfX[selectedCols]
 
-def ModelSelection(X, Y, clf, param_dist, n_iter_search = 300):
+def ModelSelection(X, Y, clf, param_dist, n_iter_search = 20):
     """
     Do randomzied model selection
     
@@ -162,7 +162,7 @@ def wrapper(dfX, dfY):
                   'gamma': np.arange(1/(n_cols*3), 1, 1/(n_cols*3.5)),
                   'class_weight': ['balanced', None]}
     
-    SVCclf, SVCmeanF1 = ModelSelection(dfX_selected, dfY, SVCclf, SVCparam_dist, n_iter_search = 100)
+    SVCclf, SVCmeanF1 = ModelSelection(dfX_selected, dfY, SVCclf, SVCparam_dist, n_iter_search = 20)
     svmfilter = SVCclf.decision_function(dfX_selected)     
 
     ###############################################################################
@@ -180,7 +180,7 @@ def wrapper(dfX, dfY):
                   "criterion": ["gini", "entropy"],
                   "class_weight": ['balanced', 'balanced_subsample', None]}
     
-    RFclf, RFmeanF1 = ModelSelection(dfX_selected, dfY, RFclf, RFparam_dist, n_iter_search = 100)
+    RFclf, RFmeanF1 = ModelSelection(dfX_selected, dfY, RFclf, RFparam_dist, n_iter_search = 20)
 
     #use the feature_importances to weight X, and then calculate Similarities using euclidean metric
     dfX_selected_weighted = dfX_selected * RFclf.feature_importances_
