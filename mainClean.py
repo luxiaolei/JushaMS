@@ -35,22 +35,65 @@ mainClean.py
     
 """
 
+
 from preporcess import CleanerAnny
 from __init__ import *
 import pandas as pd
 import sys
 import os
 
-confUser['DATADIR'] = sys.argv[1]
+dataDir = sys.argv[1]
 
-fn_log = os.path.join(confUser['DATADIR'], 'CleanLog.txt')
-fn_cleand = os.path.join(confUser['DATADIR'], 'cleaned.csv')
-fn_masterDf = os.path.join(confUser['DATADIR'], 'MasterDf.csv')
+fn_log = os.path.join(dataDir, 'CleanLog.txt')
+fn_cleand = os.path.join(dataDir, 'cleaned.csv')
+fn_masterDf = os.path.join(dataDir, 'MasterDf.csv')
+confUser['DATADIR'] = dataDir
+datain = os.path.join(dataDir, 'rawdata')
 
+#sys.stdout = open(fn_log, 'w')
+
+def getDfs(kw):
+    """
+    extract filepath which statisfy keyword&ext conditions
+    return list of df
+    *args 
+    """
+    #print('I am looking for:', self.keyword[p], ' in ', self.datain)
+    paths = []
+    for dirpath, dirnames, filenames in os.walk(datain):
+        for fn in filenames:
+            if kw in fn and fn.endswith('.txt'):
+                #fn has pattern: *keword*.txt*
+                fnPath = os.path.join(dirpath, fn)
+                paths.append(fnPath)
+
+    #read_csv and catch errors
+    assert len(paths)>= 1
+    dfs = []
+    for k, fn in enumerate(paths):
+        try:
+            df = pd.read_csv(fn, delimiter= '|', encoding='gbk', 
+                              error_bad_lines= False)
+            #未知 can not be accepted by pandas
+            df.replace(['未知', '其他', '?', ' '], np.nan, inplace=True)
+
+            #for p=1, '\t' is also a delimiter, special case
+            if df.shape[1] < 2:
+                df = pd.read_csv(fn, delimiter='\t', encoding='gbk', 
+                                  error_bad_lines= False)
+
+            if k> 0: assert df.shape[1]== dfs[k-1].shape[1]
+            dfs.append(df)
+
+        except Exception as e:
+            msg = 'file: '+ fn+ ', error in getting file porcess!'
+            print(msg)
+
+    return dfs 
 
 def dfBuilder(kw, drop=True):
-    cleaner = CleanerAnny(confUser, kw)
-    dfs = cleaner._getDfs(kw)
+    #cleaner = CleanerAnny(confUser, kw)
+    dfs = getDfs(kw)
     dfFull = pd.concat(dfs, axis =0)
     if drop:
         for uidName in ['核心客户号', 'khdm', '客户代码']:
@@ -209,7 +252,7 @@ dfXYimage = dfXY[dfuimage.columns.values]
 print('XYimageshape:', dfXYimage.shape)
 
 dfCleaned = dfXYimage.join(dforgs, how='left')
-print('Cleaned.csv shape:', dfCleaned.shape)
+print('mark1 Cleaned.csv shape:', dfCleaned.shape)
 
 #convert to raw uimage data
 dfuimageRaw.set_index('客户代码', drop=True, inplace =True)
