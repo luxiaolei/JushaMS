@@ -38,7 +38,7 @@ def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
     class method of class coreWrapper. it recieves inputs required by jushacore as parameters
     and return the result if genJson==False, else write result to fn.
     """
-    assert data.shape[0] == filt.shape[0]
+    #assert data.shape[0] == filt.shape[0]
     print(data.shape, filt.shape, interval, overlap, fn)
     
     cluster = mapper.single_linkage()

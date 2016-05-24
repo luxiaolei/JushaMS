@@ -215,4 +215,6 @@ print('Cleaned.csv shape:', dfCleaned.shape)
 dfuimageRaw.set_index('客户代码', drop=True, inplace =True)
 dfuimageRaw.drop_duplicates(inplace=True)
 dfCleaned = dfCleaned.ix[:, -4:].join(dfuimageRaw, how='left')
-dfCleaned.to_csv(fn_cleand)
+dfCleaned[['Y107', 'Y170', 'Y130']] = dfCleaned[['Y107', 'Y170', 'Y130']].astype(str)
+dfCleaned['核心客户号'] = dfCleaned.index.valuesdfCleaned['核心客户号'] = dfCleaned.index.values
+dfCleaned.to_csv(fn_cleand, index=False)

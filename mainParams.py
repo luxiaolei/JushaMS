@@ -28,7 +28,7 @@ from tools import progressPrinter
 import time
 
 
-confUser['DATADIR'] = 'data/tempdir'#sys.argv[1]
+confUser['DATADIR'] = sys.argv[1]
 interval = confUser['interval']
 overlap = confUser['overlap']
 
