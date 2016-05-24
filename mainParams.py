@@ -1,10 +1,23 @@
 """
-/mainGenparams.py
+mainParams.py
 
-when called from command line $JUSHAPATH/$: python mainClean.py AbsDatadir
-This script do the following stuff:
+>>>>>>Inputs:
+* None
 
+>>>>>>Functionalities:
+* Mesh grid interval and overlap arrays
+
+* Generate a list of parameters used by TDA inputs
+
+>>>>>>Produce:
+* 'data/session/params.json'
+    e.g., [{"assetCode": "_130", "interval": 25, "overlap": 70},.........]
+
+>>>>>>Run command from terminal:
+* python3 mainParams.py data/session
+    
 """
+
 from __init__ import confUser
 from tools import genIODic
 from filters import FilterKnowledge
@@ -14,47 +27,20 @@ import os
 from tools import progressPrinter
 import time
 
-if __name__=='__main__':
-	confUser['DATADIR'] = sys.argv[1]
-	interval = confUser['interval']
-	overlap = confUser['overlap']
 
-	pgPrinter = progressPrinter(-.2, .2)
-	pgPrinter.printStep
-	sys.stdout.flush()
+confUser['DATADIR'] = 'data/tempdir'#sys.argv[1]
+interval = confUser['interval']
+overlap = confUser['overlap']
 
-	ioDic = genIODic(interval, overlap)
-	print('Construct iterval and overlap mesh grid done!')
-	pgPrinter.printStep
-	sys.stdout.flush()
+fn_params = os.path.join(confUser['DATADIR'], 'params.json')
 
-	#check is filtDic.pkl exist first
-	filtdir = os.path.join(confUser['DATADIR'], 'filterDic.pkl')
-	while True:
-		if os.path.isfile(filtdir):
+# Constract params.json
+ioDic = genIODic(interval, overlap)
+paramsForGenjson=[]
+for kp, vp in ioDic.items():
+    for kf in ['_107']: # , '_170', '_130']:
+        epoch = { 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf }
+        paramsForGenjson.append(epoch)
 
-			Filter = FilterKnowledge(confUser, v=False)
-			filterDic = Filter.assetFilterDic(dim= confUser['dim'] ,intresedCode= [107, 130, 170], genF= False)
-			print('Construct filters Dictionary done!')
-			pgPrinter.printStep
-			sys.stdout.flush()
-
-			paramsForGenjson=[]
-			for kp, vp in ioDic.items():
-				for kf, vf in filterDic.items():
-					epoch = { 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf }
-					paramsForGenjson.append(epoch)
-					pgPrinter.printStep
-			print('Construct paramters for the next step is done!')
-			pgPrinter.printStep
-			sys.stdout.flush()
-
-			paramsDicDir = os.path.join(confUser['DATADIR'], 'params.json')
-			with open(paramsDicDir, 'w') as f:
-				dump(paramsForGenjson, f)
-			print('<<<1>>>')
-			break
-		else:
-			time.sleep(.5)
-		
-
+with open(fn_params, 'w') as f:
+    dump(paramsForGenjson, f)

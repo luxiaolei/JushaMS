@@ -93,7 +93,7 @@ class Cleaner:
         ran this func after startClening()
         """
         assert self.cleanedDf.shape[0] > 100 and self.tranDf.shape[0] > 100
-        assert (not self.error, print(self.error))
+        #assert (not self.error, print(self.error))
         
         #debug
         if not self.error: print(self.error)

@@ -1,4 +1,27 @@
+"""
+mainResults.py
 
+>>>>>>Inputs:
+
+* data/session/FilterDic.pkl 
+    dict type with key '_107', '_170', '_130'. values are 1-D array
+
+* data/session/_107_data.pkl
+* data/session/_170_data.pkl
+* data/session/_130_data.pkl
+    values are 1-D array with length (n_samplesize * n_sample)/2 - n_samplesize
+
+
+>>>>>>Functionalities:
+* Run TDA with inputs params
+
+>>>>>>Produce:
+* data/session/results/*.json
+
+>>>>>>Run command from terminal:
+* python3 mainResults.py data/session interval overlap assetKey
+    
+"""
 
 
 from __init__ import confUser
@@ -40,49 +63,35 @@ def core_wrapper(baseDir, data, filt, interval, overlap, fn, genJson= True):
 
 
 if __name__=='__main__':
-	
-	#dataDir = 'data/tempdir'# sys.argv[1]
-	dataDir = sys.argv[1]
-	interval = sys.argv[2]
-	overlap = sys.argv[3]
-	filtKey = sys.argv[4]
-	print(type(interval))
-	pgPrinter = progressPrinter(-.2, .2)
-	pgPrinter.printStep
-	sys.stdout.flush()
+
+    #dataDir = 'data/tempdir'# sys.argv[1]
+    dataDir = sys.argv[1]
+    interval = sys.argv[2]
+    overlap = sys.argv[3]
+    filtKey = sys.argv[4]  #inputs: _107
+
+    pgPrinter = progressPrinter(-.2, .2)
+    pgPrinter.printStep
+    sys.stdout.flush()
 
 
-	#dataDir = confUser['DATADIR']
-	dataTransDir = os.path.join(dataDir, 'transformed.csv')
-	data = pd.read_csv(dataTransDir).values
-	pgPrinter.printStep
-	sys.stdout.flush()
-
-	filtDir = os.path.join(dataDir, 'filterDic.pkl') 
-	pgPrinter.printStep
-	sys.stdout.flush()
-
-	print(filtDir)
-
-	with open(filtDir, 'rb') as f:
-		filtDic = pkl.load(f)
-	print(filtDic.keys())
-	filt = filtDic[filtKey]
-	pgPrinter.printStep
-	sys.stdout.flush()
-
-	fn = 'i'+interval+'o'+overlap+filtKey
-	dataDir = os.path.join(dataDir, 'results')
-
-	core_wrapper(dataDir, data, filt, int(interval), int(overlap), fn)
-	pgPrinter.printStep
-	sys.stdout.flush()
-	print('<<<1>>>')
+    #dataDir = confUser['DATADIR']
+    fn_data = os.path.join(dataDir, filtKey+'_data.pkl')
+    fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
+    fn_results = os.path.join(dataDir, 'results')
+    
 
 
+    with open(fn_filter, 'rb') as f:
+        FilterDic = pkl.load(f)
+    with open(fn_data, 'rb') as f:
+        data = pkl.load(f)
 
-
-	
-
-
+    filt = FilterDic[filtKey]
+    fn = 'i'+interval+'o'+overlap+filtKey
+    
+    core_wrapper(fn_results, data, filt, int(interval), int(overlap), fn)
+    pgPrinter.printStep
+    sys.stdout.flush()
+    #print('<<<1>>>')
 
