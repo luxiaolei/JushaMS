@@ -55,6 +55,7 @@ from sklearn.preprocessing import MinMaxScaler
 from scipy.spatial.distance import pdist
 from scipy.stats import randint as sp_randint
 from operator import itemgetter
+from __init__ import useFullFeatures
 
 import pickle as pkl
 import numpy as np
@@ -184,13 +185,15 @@ def wrapper(dfX, dfY):
     #use the feature_importances to weight X, and then calculate Similarities using euclidean metric
     dfX_selected_weighted = dfX_selected * RFclf.feature_importances_
 
-    #Similarity for all features
-    minMaxScaler = MinMaxScaler()
-    X_scaled = minMaxScaler.fit_transform(dfX.values)
-    SimilarityArr = pdist(X_scaled, metric='euclidean')
+    if useFullFeatures:
+        #Similarity for all features
+        minMaxScaler = MinMaxScaler()
+        X_scaled = minMaxScaler.fit_transform(dfX.values)
+        SimilarityArr = pdist(X_scaled, metric='euclidean')
+    else:
 
-    #Similarity for selected features
-    #SimilarityArr = pdist(dfX_selected_weighted.values, metric='euclidean')
+        #Similarity for selected features
+        SimilarityArr = pdist(dfX_selected_weighted.values, metric='euclidean')
 
     #rank the users by predict_proba method
     proba0 = RFclf.predict_proba(dfX_selected)[:, 0]

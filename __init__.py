@@ -11,6 +11,8 @@ from preporcess import Cleaner, CleanerAnny
 from filters import FilterKnowledge
 from wrapper import coreWrapper
 """
+useFullFeatures = False
+Consider0BalanceAsPositive = True
 
 confUser = {
 	'DATADIR' : "data/tempdir",

@@ -199,9 +199,16 @@ print('Trade after clean shape:', dftrade.shape)
 ############################################################################
 dfasset = dfBuilder('金融资产', drop=False)
 print('Asset Raw shape:', dfasset.shape)
-uid107 = dfasset.ix[(dfasset['金融资产代码']==107)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
-uid170 = dfasset.ix[(dfasset['金融资产代码']==170)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
-uid130 = dfasset.ix[(dfasset['金融资产代码']==130)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
+
+if Consider0BalanceAsPositive:
+    uid107 = dfasset.ix[(dfasset['金融资产代码']==107)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
+    uid170 = dfasset.ix[(dfasset['金融资产代码']==170)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
+    uid130 = dfasset.ix[(dfasset['金融资产代码']==130)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
+else:
+    uid107 = dfasset.ix[dfasset['金融资产代码']==107, '核心客户号'].drop_duplicates().values
+    uid170 = dfasset.ix[dfasset['金融资产代码']==170, '核心客户号'].drop_duplicates().values
+    uid130 = dfasset.ix[dfasset['金融资产代码']==130, '核心客户号'].drop_duplicates().values
+
 
 #select rows based on none-info leaking asset codes
 dfasset = dfasset.ix[(~dfasset['金融资产代码'].isin(targetLeakCodes)&(dfasset['金融资产余额']!=0)), :]
@@ -227,6 +234,8 @@ print('Asset after clean shape:', dfasset_dummy.shape)
 dfuimage['Y107'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid107 else 0)
 dfuimage['Y170'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid170 else 0)
 dfuimage['Y130'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid130 else 0)
+
+
 
 dfuimage.set_index('核心客户号', drop= True, inplace= True)
 dftrade.set_index('核心客户号', drop= True, inplace= True)
