@@ -113,7 +113,7 @@ class Cleaner:
         self.pgPrinter.printStep
         
          
-    def _getDfs(self, p=0):
+    def _getDfs(self, kw):
         """
         extract filepath which statisfy keyword&ext conditions
         return list of df
@@ -122,7 +122,7 @@ class Cleaner:
         paths = []
         for dirpath, dirnames, filenames in os.walk(self.datain):
             for fn in filenames:
-                if self.keyword[p] in fn and fn.endswith(self.ext):
+                if kw in fn and fn.endswith(self.ext):
                     #fn has pattern: *keword*.txt*
                     fnPath = os.path.join(dirpath, fn)
                     paths.append(fnPath)
@@ -261,7 +261,7 @@ class CleanerAnny(Cleaner):
         self.pgPrinter.printStep
         
         #read raw files and concate them
-        dfList = self._getDfs(p=0)
+        dfList = self._getDfs(p=0) #illed!
         assetDf = pd.concat(dfList, axis=0)
         print(assetDf.shape)
         self.pgPrinter.printStep

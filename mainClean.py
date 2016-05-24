@@ -50,7 +50,7 @@ fn_masterDf = os.path.join(confUser['DATADIR'], 'MasterDf.csv')
 
 def dfBuilder(kw, drop=True):
     cleaner = CleanerAnny(confUser, kw)
-    dfs = cleaner._getDfs(p=0)
+    dfs = cleaner._getDfs(kw)
     dfFull = pd.concat(dfs, axis =0)
     if drop:
         for uidName in ['核心客户号', 'khdm', '客户代码']:
@@ -103,7 +103,7 @@ targetLeakCodes = [107, 170, 130, 131, 1071, 1072, 104, 121, 150]
 
 
 ############################################################################
-dfuimageRaw = dfBuilder(['客户画像'], drop=True).ix[:, uimageCols]
+dfuimageRaw = dfBuilder('客户画像', drop=True).ix[:, uimageCols]
 
 #select cols
 dfuimage = dfuimageRaw.copy()
@@ -142,7 +142,7 @@ dfuinfo.drop(['首次开户日期'],axis=1 , inplace=True)
 print('Uinfo after clean shape:', dfuinfo.shape)
 
 ############################################################################
-dftrade = dfBuilder(['产品交易'], drop=True)
+dftrade = dfBuilder('产品交易', drop=True)
 print('Trade Raw shape:', dftrade.shape)
 
 #index type convert
@@ -154,7 +154,7 @@ dftrade.dropna(inplace=True)
 print('Trade after clean shape:', dftrade.shape)
 
 ############################################################################
-dfasset = dfBuilder(['金融资产'], drop=False)
+dfasset = dfBuilder('金融资产', drop=False)
 print('Asset Raw shape:', dfasset.shape)
 uid107 = dfasset.ix[(dfasset['金融资产代码']==107)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
 uid170 = dfasset.ix[(dfasset['金融资产代码']==170)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
@@ -200,7 +200,7 @@ dfXY.to_csv(fn_masterDf)
 ############################################################################
 ##Generates Cleaned.csv
 
-dforgs = dfBuilder(['对应机构'], drop=True)
+dforgs = dfBuilder('对应机构', drop=True)
 dforgs.drop_duplicates(inplace=True)
 dforgs.set_index('khdm', drop=True, inplace=True)
 dforgs.rename(columns={'jgmc': '所属机构'}, inplace=True)
