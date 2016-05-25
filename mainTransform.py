@@ -163,8 +163,9 @@ def wrapper(dfX, dfY):
                   'degree': [2, 3, 4],
                   'gamma': np.arange(1/(n_cols*3), 1, 1/(n_cols*3.5)),
                   'class_weight': ['balanced', None]}
-    
-    SVCclf, SVCmeanF1 = ModelSelection(dfX_selected, dfY, SVCclf, SVCparam_dist, n_iter_search = 20)
+    scaler = MinMaxScaler()
+    dfX_selected_scaled = scaler.fit_transform(dfX_selected.values)
+    SVCclf, SVCmeanF1 = ModelSelection(dfX_selected_scaled, dfY, SVCclf, SVCparam_dist, n_iter_search = 50)
     svmfilter = SVCclf.decision_function(dfX_selected)     
 
     ###############################################################################
@@ -182,7 +183,7 @@ def wrapper(dfX, dfY):
                   "criterion": ["gini", "entropy"],
                   "class_weight": ['balanced', 'balanced_subsample', None]}
     
-    RFclf, RFmeanF1 = ModelSelection(dfX_selected, dfY, RFclf, RFparam_dist, n_iter_search = 20)
+    RFclf, RFmeanF1 = ModelSelection(dfX_selected, dfY, RFclf, RFparam_dist, n_iter_search = 50)
 
     #use the feature_importances to weight X, and then calculate Similarities using euclidean metric
     dfX_selected_weighted = dfX_selected * RFclf.feature_importances_
