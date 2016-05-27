@@ -58,7 +58,7 @@ def getDfs(kw):
     return list of df
     *args 
     """
-    #print('I am looking for:', self.keyword[p], ' in ', self.datain)
+    print('I am looking for:', kw, ' in ', datain)
     paths = []
     for dirpath, dirnames, filenames in os.walk(datain):
         for fn in filenames:
@@ -113,12 +113,15 @@ def intIndex(x):
 
     
 ############################################################################
-uimageCols = ['客户代码', '性别', '年龄', '婚姻', '学历', '从属行业', '理财抗风险等级', '客户层级', '新老客户标记', 
+uimageCols = ['客户代码', '性别', '年龄', '婚姻', '学历', '从属行业', '理财抗风险等级', '客户层级', '新老客户标记',
               '五级分类', '小微客户类型', '消费类资产产品', '纯消费性微贷标记', '纯质押贷款标记', '非储投资偏好', 
               '高金融资产标记', '购买大额他行理财标记', '大额消费标记', '信用卡高还款标记', '信用卡高端消费标记', 
               '优质行业标记', '高代发额客户标记', '潜在高端客户标记', '客户贡献度', '客户活跃度', '客户渠道偏好', '客户金融资产偏好']
-uinfoCols = ['核心客户号', '首次开户日期', '贵宾客户等级描述', '账户即时通签约标志',
-       '手机银行签约标志', '三方存管签约标志', '网银签约标志', '代发工资签约标志', '信用卡绑定还款签约标志', '按揭贷款标志',
+
+uinfoCols = ['核心客户号', '首次开户日期', '贵宾客户等级描述', '账户即时通签约标志',  '活期余额', '存款余额月日均', '存款余额年日均',
+         '存款占比', '理财占比', '金融资产余额', '金融资产余额月日均', '金融资产余额年日均', '持有定期存款标志', '手机银行签约标志',
+         '持有定期存款标志', '手机银行签约标志', '三方存管签约标志', '网银签约标志', '代发工资签约标志', 
+       '信用卡绑定还款签约标志', '按揭贷款标志',
        '当年购买理财标志', '钱生钱签约标志',  '资金归集签约标志', '乐收银签约标志',
        '近三个月柜面存款次数', '近三个月柜面存款金额', '近三个月柜面取款次数', '近三个月柜面取款金额', '近三个月柜面转账次数',
        '近三个月柜面转账金额', '近三个月ATM存款次数', '近三个月ATM存款金额', '近三个月ATM取款次数',
@@ -200,7 +203,7 @@ print('Trade after clean shape:', dftrade.shape)
 dfasset = dfBuilder('金融资产', drop=False)
 print('Asset Raw shape:', dfasset.shape)
 
-if Consider0BalanceAsPositive:
+if not Consider0BalanceAsPositive:
     uid107 = dfasset.ix[(dfasset['金融资产代码']==107)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
     uid170 = dfasset.ix[(dfasset['金融资产代码']==170)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
     uid130 = dfasset.ix[(dfasset['金融资产代码']==130)&(dfasset['金融资产余额']!=0), '核心客户号'].drop_duplicates().values
@@ -235,16 +238,16 @@ dfuimage['Y107'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid107 
 dfuimage['Y170'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid170 else 0)
 dfuimage['Y130'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid130 else 0)
 
-
-
 dfuimage.set_index('核心客户号', drop= True, inplace= True)
 dftrade.set_index('核心客户号', drop= True, inplace= True)
 dfuinfo.set_index('核心客户号', drop= True, inplace= True)
 
 dfXY = dfuimage.join([dftrade, dfuinfo, dfasset_dummy], how='inner')
 dfXY.fillna(0, inplace=True)
-dfXY.drop_duplicates(inplace=True)
-print('Joint dataframe shape:', dfXY.shape)
+
+#warning! dfXY.drop_duplicates(on all features).shape != (on uid only).shape
+dfXY = dfXY.reset_index().drop_duplicates(subset='核心客户号').set_index('核心客户号')
+print('Joint Master dataframe shape:', dfXY.shape)
 print('>>>>>'*20)
 
 dfXY.to_csv(fn_masterDf)
@@ -261,12 +264,19 @@ dfXYimage = dfXY[dfuimage.columns.values]
 print('XYimageshape:', dfXYimage.shape)
 
 dfCleaned = dfXYimage.join(dforgs, how='left')
-print('mark1 Cleaned.csv shape:', dfCleaned.shape)
+print('after join orgs, cleaned.csv shape:', dfCleaned.shape)
 
 #convert to raw uimage data
 dfuimageRaw.set_index('客户代码', drop=True, inplace =True)
 dfuimageRaw.drop_duplicates(inplace=True)
 dfCleaned = dfCleaned.ix[:, -4:].join(dfuimageRaw, how='left')
+print('after join uimageRaw, cleaned.csv shape:', dfCleaned.shape)
+
 dfCleaned[['Y107', 'Y170', 'Y130']] = dfCleaned[['Y107', 'Y170', 'Y130']].astype(str)
 dfCleaned['核心客户号'] = dfCleaned.index.values
+dfCleaned.drop_duplicates(subset=['核心客户号'], inplace=True)
+print('After drop dups UID, cleaned.csv shape:', dfCleaned.shape)
 dfCleaned.to_csv(fn_cleand, index=False)
+print('Final, cleaned.csv shape:', dfCleaned.shape)
+
+assert dfXY.shape[0] == dfCleaned.shape[0]
