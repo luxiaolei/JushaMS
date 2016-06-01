@@ -70,9 +70,6 @@ if __name__=='__main__':
     overlap = sys.argv[3]
     filtKey = sys.argv[4]  #inputs: _107
 
-    pgPrinter = progressPrinter(-.2, .2)
-    pgPrinter.printStep
-    sys.stdout.flush()
 
 
     #dataDir = confUser['DATADIR']
@@ -80,18 +77,20 @@ if __name__=='__main__':
     fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
     fn_results = os.path.join(dataDir, 'results')
     
-
+    n = .33
+    print('<<<{0:.2f}>>>'.format(1.*n))
 
     with open(fn_filter, 'rb') as f:
         FilterDic = pkl.load(f)
     with open(fn_data, 'rb') as f:
         data = pkl.load(f)
 
+    print('<<<{0:.2f}>>>'.format(2.*n))
     filt = FilterDic[filtKey]
     fn = 'i'+interval+'o'+overlap+filtKey
     
     core_wrapper(fn_results, data, filt, int(interval), int(overlap), fn)
     pgPrinter.printStep
     sys.stdout.flush()
-    #print('<<<1>>>')
+    print('<<<1>>>')
 

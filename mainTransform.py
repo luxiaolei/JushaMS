@@ -70,16 +70,21 @@ selectedCols = ['性别', '年龄', '婚姻', '学历', '从属行业', '理财�
 #read dfXY
 dataDir = sys.argv[1]
 
-
+n = .2
+print('<<<{0:.2f}>>>'.format(1.*n))
 #fn_cleand = os.path.join(dataDir, 'cleaned.csv')
 fn_masterDf = os.path.join(dataDir, 'MasterDf.csv')
 fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
 
+
+print('<<<{0:.2f}>>>'.format(2.*n))
 ##select X based on selectedCols, select Y cols
 dfXY = pd.read_csv(fn_masterDf, index_col='核心客户号')
 dfX = dfXY[selectedCols]
 dfYs = dfXY[['Y107', 'Y170', 'Y130']]
 
+
+print('<<<{0:.2f}>>>'.format(3.*n))
 #ln transform balance features, minmax all afterwards
 colsWithBalance = [col for col in dfX.columns if '金额' in col or '余额' in col]
 for cb in colsWithBalance:
@@ -88,6 +93,8 @@ for cb in colsWithBalance:
 scaler = MinMaxScaler()
 X = scaler.fit_transform(dfX)
 
+
+print('<<<{0:.2f}>>>'.format(4.*n))
 #Gen filters for each target
 
 FilterDic = {}
@@ -105,4 +112,4 @@ for target in ['Y107', 'Y170', 'Y130']:
 
 with open(fn_filter, 'wb') as f:
     pkl.dump(FilterDic, f)
-
+print('<<<1>>>')

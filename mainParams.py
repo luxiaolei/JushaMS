@@ -34,8 +34,14 @@ overlap = confUser['overlap']
 
 fn_params = os.path.join(confUser['DATADIR'], 'params.json')
 
+
+n = .33
+print('<<<{0:.2f}>>>'.format(1.*n))
 # Constract params.json
 ioDic = genIODic(interval, overlap)
+
+
+print('<<<{0:.2f}>>>'.format(2.*n))
 paramsForGenjson=[]
 for kp, vp in ioDic.items():
     for kf in ['_107']: # , '_170', '_130']:
@@ -44,3 +50,5 @@ for kp, vp in ioDic.items():
 
 with open(fn_params, 'w') as f:
     dump(paramsForGenjson, f)
+
+print('<<<1>>>'）
