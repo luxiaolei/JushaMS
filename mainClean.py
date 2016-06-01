@@ -284,9 +284,9 @@ dfCleaned[['Y107', 'Y170', 'Y130']] = dfCleaned[['Y107', 'Y170', 'Y130']].astype
 dfCleaned['核心客户号'] = dfCleaned.index.values
 dfCleaned.drop_duplicates(subset=['核心客户号'], inplace=True)
 dfCleaned.rename(columns={'Y107':'主动负债', 'Y170': '保险', 'Y130': '基金'}, inplace=True)
-dfCleaned.replace(to_replace={'主动负债': {0: '未持有', 1: '持有'},
-                            '保险': {0: '未持有', 1: '持有'},
-                            '基金': {0: '未持有', 1: '持有'}}， inplace=True)
+dfCleaned.replace(to_replace={'主动负债': {"0": '未持有', "1": '持有'},
+                            '保险': {"0": '未持有', "1": '持有'},
+                            '基金': {"0": '未持有', "1": '持有'}}, inplace=True)
 
 print('After drop dups UID, cleaned.csv shape:', dfCleaned.shape)
 dfCleaned.to_csv(fn_cleand, index=False)
