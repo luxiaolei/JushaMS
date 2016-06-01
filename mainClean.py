@@ -156,6 +156,7 @@ dfuimage = dfuimageRaw.copy()
 print('Uimage Raw shape:', dfuimage.shape)
 n = 0.1428
 print('<<<{0:.2f}>>>'.format(1.*n))
+sys.stdout.flush()
 
 #outlier
 dfuimage['年龄'] = dfuimage['年龄'].apply(lambda x: x if x < 120 else 120 )
@@ -172,6 +173,7 @@ for k,v in UimageMapTable:
         print(e)
 print('Uimage After clean shape: ', dfuimage.shape)
 print('<<<{0:.2f}>>>'.format(2.*n))
+sys.stdout.flush()
 ############################################################################
 dfuinfo = dfBuilder('基本信息', drop=True)
 print('Uinfo Raw shape:', dfuinfo.shape)
@@ -189,6 +191,7 @@ dfuinfo['交易活跃度描述'] = dfuinfo['交易活跃度描述'].apply(lambda
 dfuinfo.drop(['首次开户日期'],axis=1 , inplace=True)
 print('Uinfo after clean shape:', dfuinfo.shape)
 print('<<<{0:.2f}>>>'.format(3.*n))
+sys.stdout.flush()
 ############################################################################
 dftrade = dfBuilder('产品交易', drop=True)
 print('Trade Raw shape:', dftrade.shape)
@@ -201,6 +204,7 @@ dftrade.drop(labels=['统计日期', 'khdm', 'CUST_NAME'], axis=1, inplace=True)
 dftrade.dropna(inplace=True)
 print('Trade after clean shape:', dftrade.shape)
 print('<<<{0:.2f}>>>'.format(4.*n))
+sys.stdout.flush()
 ############################################################################
 dfasset = dfBuilder('金融资产', drop=False)
 print('Asset Raw shape:', dfasset.shape)
@@ -235,6 +239,7 @@ dfasset_dummy = dfs[0].join(dfs[1:])
 dfasset_dummy.fillna(0, inplace=True)
 print('Asset after clean shape:', dfasset_dummy.shape)
 print('<<<{0:.2f}>>>'.format(5.*n))
+sys.stdout.flush()
 ############################################################################
 dfuimage['Y107'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid107 else 0)
 dfuimage['Y170'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid170 else 0)
@@ -254,6 +259,7 @@ print('>>>>>'*20)
 
 dfXY.to_csv(fn_masterDf)
 print('<<<{0:.2f}>>>'.format(6.*n))
+sys.stdout.flush()
 ############################################################################
 ##Generates Cleaned.csv
 
@@ -278,6 +284,10 @@ dfCleaned[['Y107', 'Y170', 'Y130']] = dfCleaned[['Y107', 'Y170', 'Y130']].astype
 dfCleaned['核心客户号'] = dfCleaned.index.values
 dfCleaned.drop_duplicates(subset=['核心客户号'], inplace=True)
 dfCleaned.rename(columns={'Y107':'主动负债', 'Y170': '保险', 'Y130': '基金'}, inplace=True)
+dfCleaned.replace(to_replace={'主动负债': {0: '未持有', 1: '持有'},
+                            '保险': {0: '未持有', 1: '持有'},
+                            '基金': {0: '未持有', 1: '持有'}}， inplace=True)
+
 print('After drop dups UID, cleaned.csv shape:', dfCleaned.shape)
 dfCleaned.to_csv(fn_cleand, index=False)
 print('Final, cleaned.csv shape:', dfCleaned.shape)

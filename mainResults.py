@@ -79,6 +79,7 @@ if __name__=='__main__':
     
     n = .33
     print('<<<{0:.2f}>>>'.format(1.*n))
+    sys.stdout.flush()
 
     with open(fn_filter, 'rb') as f:
         FilterDic = pkl.load(f)
@@ -86,6 +87,7 @@ if __name__=='__main__':
         data = pkl.load(f)
 
     print('<<<{0:.2f}>>>'.format(2.*n))
+    sys.stdout.flush()
     filt = FilterDic[filtKey]
     fn = 'i'+interval+'o'+overlap+filtKey
     
