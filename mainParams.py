@@ -46,7 +46,7 @@ print('<<<{0:.2f}>>>'.format(2.*n))
 sys.stdout.flush()
 paramsForGenjson=[]
 for kp, vp in ioDic.items():
-    for kf in ['_107']: # , '_170', '_130']:
+    for kf in ['_107' , '_170', '_130']:
         epoch = { 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf }
         paramsForGenjson.append(epoch)
 
