@@ -92,7 +92,5 @@ if __name__=='__main__':
     fn = 'i'+interval+'o'+overlap+filtKey
     
     core_wrapper(fn_results, data, filt, int(interval), int(overlap), fn)
-    pgPrinter.printStep
-    sys.stdout.flush()
     print('<<<1>>>')
 
