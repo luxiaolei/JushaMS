@@ -81,7 +81,7 @@ fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
 print('<<<{0:.2f}>>>'.format(2.*n))
 sys.stdout.flush()
 ##select X based on selectedCols, select Y cols
-dfXY = pd.read_csv(fn_masterDf, index_col='核心客户号')
+dfXY = pd.read_csv(fn_masterDf, index_col='v_khdm')
 dfX = dfXY[selectedCols]
 dfYs = dfXY[['Y107', 'Y170', 'Y130']]
 
