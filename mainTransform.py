@@ -1,37 +1,24 @@
 """
 mainTranform.py
-
 >>>>>>Inputs:
 * 'data/session/masterDf.csv'
 * 'data/session/cleaned.csv'
-
-
 >>>>>>Functionalities:
 * Read 'data/session/masterDf.csv'
-
 * Feature selection using low variance filter
-
 * Feature selection using ANOVA-F test
-
 * Minmax scale before SVM
-
 * Model selection for SVM and Randomforest using RandomizedCrossValidation
-
 * Generate Filters using distance to hyperplane
-
 * Generate Silimarity vector by producting feature weights of descision tree with Anonva-F selected features (only for 107)
-
 * Reproduce Cleaned.csv with rankings joint using both svm and randomforest
-
 >>>>>>Produce:
 * data/session/FilterDic.pkl 
     dict type with key '_107', '_170', '_130'. values are 1-D array
-
 * data/session/_107_data.pkl
 * data/session/_170_data.pkl
 * data/session/_130_data.pkl
     values are 1-D array with length (n_samplesize * n_sample)/2 - n_samplesize
-
 * data/session/Cleaned.csv
     with ranking columns, ['Rank_107', 'Rank_170', 'Rank_130'], joint to cleaned.csv
     
@@ -81,7 +68,7 @@ fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
 print('<<<{0:.2f}>>>'.format(2.*n))
 sys.stdout.flush()
 ##select X based on selectedCols, select Y cols
-dfXY = pd.read_csv(fn_masterDf, index_col='v_khdm')
+dfXY = pd.read_csv(fn_masterDf, index_col='核心客户号')
 dfX = dfXY[selectedCols]
 dfYs = dfXY[['Y107', 'Y170', 'Y130']]
 
