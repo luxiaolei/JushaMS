@@ -99,7 +99,7 @@ for target in ['Y107', 'Y170', 'Y130']:
     #generates Similarity for each asset
     fn_similarity = os.path.join(dataDir, name+'_data.pkl')
     with open(fn_similarity, 'wb') as f:
-        pkl.dump(SimilarityArr, f)
+        pkl.dump(SimilarityArr, f, protocol=4)
 
 with open(fn_filter, 'wb') as f:
     pkl.dump(FilterDic, f)
