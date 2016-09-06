@@ -191,11 +191,12 @@ sys.stdout.flush()
 dftrade = dfBuilder('产品交易', drop=True)
 print('Trade Raw shape:', dftrade.shape)
 
-#index type convert
-dftrade['核心客户号'] = dftrade['核心客户号'].apply(intIndex)
+#rename index column
+dftrade.rename(columns={'核心客户号': 'HXKHH'}, inplace=True)
+dftrade.rename(columns={'khdm': '核心客户号'}, inplace=True)
 
 #drop
-dftrade.drop(labels=['统计日期', 'khdm', 'CUST_NAME'], axis=1, inplace=True)
+dftrade.drop(labels=['统计日期', 'HXKHH', 'CUST_NAME'], axis=1, inplace=True)
 dftrade.dropna(inplace=True)
 print('Trade after clean shape:', dftrade.shape)
 print('<<<{0:.2f}>>>'.format(4.*n))
