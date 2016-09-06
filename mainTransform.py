@@ -89,6 +89,7 @@ print('<<<{0:.2f}>>>'.format(4.*n))
 sys.stdout.flush()
 
 print('Calculating distance matrix...')
+sys.stdout.flush()
 np.save(os.path.join(dataDir, 'dist_matrix.npy'), pdist(X, metric='euclidean'))
 print('<<<{0:.2f}>>>'.format(5.*n))
 sys.stdout.flush()
@@ -100,6 +101,7 @@ FilterDic = {}
 for target in ['Y107', 'Y170', 'Y130']:
     name = '_'+target[1:]
     print('Fitting {0}...'.format(name))
+    sys.stdout.flush()
     SVCclf = svm.SVC(C=16)
     SVCclf.fit(X, dfYs[target])
     svmfilter = SVCclf.decision_function(X)
