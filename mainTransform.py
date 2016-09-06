@@ -42,6 +42,7 @@ import numpy as np
 import pandas as pd
 import os
 import sys
+import gc
 
 selectedCols = ['性别', '年龄', '婚姻', '学历', '从属行业', '理财抗风险等级', '客户层级', 
                 '新老客户标记', '五级分类', '小微客户类型', '消费类资产产品', '纯消费性微贷标记', 
@@ -57,7 +58,7 @@ selectedCols = ['性别', '年龄', '婚姻', '学历', '从属行业', '理财�
 #read dfXY
 dataDir = sys.argv[1]
 
-n = .2
+n = .15
 print('<<<{0:.2f}>>>'.format(1.*n))
 sys.stdout.flush()
 #fn_cleand = os.path.join(dataDir, 'cleaned.csv')
@@ -86,25 +87,27 @@ X = scaler.fit_transform(dfX)
 
 print('<<<{0:.2f}>>>'.format(4.*n))
 sys.stdout.flush()
+
+print('Calculating distance matrix...')
+np.save(os.path.join(dataDir, 'dist_matrix.npy'), pdist(X, metric='euclidean'))
+print('<<<{0:.2f}>>>'.format(5.*n))
+sys.stdout.flush()
+gc.collect()
+
 #Gen filters for each target
-progress = 4.*n
+progress = 5.*n
 FilterDic = {}
 for target in ['Y107', 'Y170', 'Y130']:
+    name = '_'+target[1:]
+    print('Fitting {0}...'.format(name))
     SVCclf = svm.SVC(C=16)
     SVCclf.fit(X, dfYs[target])
-    progress += 0.01
-    print('<<<{0:.2f}>>>'.format(progress))
     svmfilter = SVCclf.decision_function(X)
-    SimilarityArr = pdist(X, metric='euclidean')
-    progress += 0.02
-    print('<<<{0:.2f}>>>'.format(progress))
-    name = '_'+target[1:]
     FilterDic[name] = svmfilter
-    #generates Similarity for each asset
-    fn_similarity = os.path.join(dataDir, name+'_data.npy')
-    np.save(fn_similarity, SimilarityArr)
-    progress += 0.02
+    progress += 0.08
     print('<<<{0:.2f}>>>'.format(progress))
+    sys.stdout.flush()
+    gc.collect()
 
 with open(fn_filter, 'wb') as f:
     pkl.dump(FilterDic, f)

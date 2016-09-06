@@ -74,7 +74,7 @@ if __name__=='__main__':
 
 
     #dataDir = confUser['DATADIR']
-    fn_data = os.path.join(dataDir, filtKey+'_data.npy')
+    fn_data = os.path.join(dataDir, 'dist_matrix.npy')
     fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
     fn_results = os.path.join(dataDir, 'results')
     
