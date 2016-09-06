@@ -87,18 +87,24 @@ X = scaler.fit_transform(dfX)
 print('<<<{0:.2f}>>>'.format(4.*n))
 sys.stdout.flush()
 #Gen filters for each target
-
+progress = 4.*n
 FilterDic = {}
 for target in ['Y107', 'Y170', 'Y130']:
     SVCclf = svm.SVC(C=16)
     SVCclf.fit(X, dfYs[target])
+    progress += 0.01
+    print('<<<{0:.2f}>>>'.format(progress))
     svmfilter = SVCclf.decision_function(X)
     SimilarityArr = pdist(X, metric='euclidean')
+    progress += 0.02
+    print('<<<{0:.2f}>>>'.format(progress))
     name = '_'+target[1:]
     FilterDic[name] = svmfilter
     #generates Similarity for each asset
     fn_similarity = os.path.join(dataDir, name+'_data.npy')
     np.save(fn_similarity, SimilarityArr)
+    progress += 0.02
+    print('<<<{0:.2f}>>>'.format(progress))
 
 with open(fn_filter, 'wb') as f:
     pkl.dump(FilterDic, f)
