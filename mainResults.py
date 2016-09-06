@@ -25,6 +25,7 @@ mainResults.py
 
 
 from __init__ import confUser
+import numpy as np
 import pandas as pd
 import pickle as pkl
 import jushacore as mapper 
@@ -73,7 +74,7 @@ if __name__=='__main__':
 
 
     #dataDir = confUser['DATADIR']
-    fn_data = os.path.join(dataDir, filtKey+'_data.pkl')
+    fn_data = os.path.join(dataDir, filtKey+'_data.npy')
     fn_filter = os.path.join(dataDir, 'FilterDic.pkl')
     fn_results = os.path.join(dataDir, 'results')
     
@@ -84,7 +85,7 @@ if __name__=='__main__':
     with open(fn_filter, 'rb') as f:
         FilterDic = pkl.load(f)
     with open(fn_data, 'rb') as f:
-        data = pkl.load(f)
+        data = np.load(f)
 
     print('<<<{0:.2f}>>>'.format(2.*n))
     sys.stdout.flush()

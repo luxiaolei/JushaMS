@@ -97,9 +97,8 @@ for target in ['Y107', 'Y170', 'Y130']:
     name = '_'+target[1:]
     FilterDic[name] = svmfilter
     #generates Similarity for each asset
-    fn_similarity = os.path.join(dataDir, name+'_data.pkl')
-    with open(fn_similarity, 'wb') as f:
-        pkl.dump(SimilarityArr, f, protocol=4)
+    fn_similarity = os.path.join(dataDir, name+'_data.npy')
+    np.save(fn_similarity, SimilarityArr)
 
 with open(fn_filter, 'wb') as f:
     pkl.dump(FilterDic, f)
