@@ -288,7 +288,7 @@ def jushacore(pcd, filt, cover, cutoff,
     M = jusha_output(point_labels=point_labels)
 
     #xl_add, fixed core dump error, when wrapped
-    cores = int(max(2, cpu_count() / 2))
+    cores = int(max(2, cpu_count() / 4))
     #cores = 1
 
     if verbose:
