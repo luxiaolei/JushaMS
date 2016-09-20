@@ -1,6 +1,6 @@
 """
 mainMultiThread.py
->>>>>>Run command from terminal:
+>>>>>>>>>>Run command from terminal:
 * python3 mainMultiThread.py $DATA_DIR
 """
 import warnings
@@ -52,7 +52,7 @@ yCols = ['Y107', 'Y170', 'Y130']
 #####################################
 
 def print_msg(msg):
-    print('Elapsed time: {0:.2f} sec.'.format((datetime.now() - now).total_seconds()), flush = True)
+    print('========= Elapsed time: {0:.2f} sec ========='.format((datetime.now() - now).total_seconds()), flush = True)
     print(msg, flush = True)
 
 def save_metadata_json_file():
@@ -73,19 +73,19 @@ def incr_progress(key, p):
     global metaJson
     metaJson[key] += p
     update_metadata()
-    print_msg('<<<Progress[' + key + ']: ' + str(metaJson[key]) + '>>>')
+    print_msg('<<<<<Progress[{0}]: {1:.2f}>>>>>'.format(key, metaJson[key]))
 
 def progress_done(key):
     global metaJson
     metaJson[key] = 1
     update_metadata()
-    print_msg('<<<Progress[' + key + ']: done!>>>')
+    print_msg('<<<<<Progress[' + key + ']: 1>>>>>')
 
 def progress_failed(key):
     global metaJson
     metaJson[key] = -1
     update_metadata()
-    print_msg('<<<Progress[' + key + ']: failed!>>>')
+    print_msg('<<<<<Progress[' + key + ']: -1>>>>>')
     time.sleep(2)
     sys.exit(1)
 
@@ -478,7 +478,7 @@ gc.collect()
 ##          RESULTS                ##
 #####################################
 
-metaJson['result'] = []
+metaJson['results'] = []
 
 def calculte_distance_matrix(X):
     return pdist(X, metric = 'euclidean')
@@ -515,7 +515,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
 
 print_msg('Calculating distance matrix...')
 dist_matrix = calculte_distance_matrix(X)
-print_msg('<<<Progress[results]: 0.2>>>')
+print_msg('<<<<<Progress[results]: 0.2>>>>>')
 
 gc.collect()
 
@@ -533,13 +533,13 @@ for future in futures.as_completed(future_to_param):
         file_name = param_to_file_name(param['interval'], param['overlap'], param['assetCode'])
         status = -1
         print('Result %r generated an exception: %s' % (file_name, ex))
-    print_msg('<<<' + file_name + ':' + status + '>>>')
-    metaJson['result'].append({ file_name + '.json': status })
+    print_msg('!!!!!!!! ' + file_name + ': ' + status + ' !!!!!!!!')
+    metaJson['results'].append({ file_name + '.json': status })
     update_metadata()
     p += step
-    print_msg('<<<Progress[results]: {0:.2f}>>>'.format(p))
+    print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 
-print_msg('<<<Progress[results]: done!>>>')
+print_msg('<<<<<Progress[results]: 1!>>>>>')
 all_done()
 
 computePool.shutdown()
