@@ -9,6 +9,7 @@ warnings.filterwarnings('ignore')
 import sys
 import gc
 import os
+import time
 from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from os import path
@@ -35,16 +36,16 @@ now = datetime.now()
 print('================ Start at ' + str(now) + ' ================', flush = True)
 
 ioPool = ThreadPoolExecutor(max_workers = 1)
-computePool = ThreadPoolExecutor(max_workers = 8)
+computePool = ThreadPoolExecutor(max_workers = 4)
 
 dataDir = sys.argv[1]
 confUser['DATADIR'] = dataDir
 interval = confUser['interval']
 overlap = confUser['overlap']
+metaJsonFile = path.join(dataDir, 'metadata.json')
+metaJson = json.load(metaJsonFile)
 
 yCols = ['Y107', 'Y170', 'Y130']
-
-progress = 0.0
 
 #####################################
 ##          FUNCTIONS              ##
@@ -54,12 +55,48 @@ def print_msg(msg):
     print('Elapsed time: {0:.2f} sec.'.format((datetime.now() - now).total_seconds()), flush = True)
     print(msg, flush = True)
 
-def print_progress():
-    print_msg('<<<{0:.2f}>>>'.format(progress))
+def save_metadata_json_file():
+    global metaJsonFile
+    global metaJson
+    with open(metaJsonFile, 'w') as f:
+        json.dump(metaJson, f, sort_keys = True, indent = 4)
+
+def update_metadata():
+    ioPool.submit(save_metadata_json_file)
+
+def init_progress(key):
+    global metaJson
+    metaJson[key] = 0.0
+    update_metadata()
+
+def incr_progress(key, p):
+    global metaJson
+    metaJson[key] += p
+    update_metadata()
+    print_msg('Progress ' + key + ': 'str(metaJson[key]))
+
+def progress_done(key):
+    global metaJson
+    metaJson[key] = 1
+    update_metadata()
+    print_msg('Progress ' + key + ' done!')
+
+def progress_failed(key):
+    global metaJson
+    metaJson[key] = -1
+    update_metadata()
+    print_msg('Progress ' + key + ' failed!')
+    time.sleep(2)
+    sys.exit(1)
+
+def all_done():
+    print_msg('ALL DONE!')
 
 #####################################
 ##          CLEAN                  ##
 #####################################
+
+init_progress('cleaned')
 
 rawdataDir = path.join(dataDir, 'rawdata')
 
@@ -106,35 +143,40 @@ def dfBuilder(kw, drop = True):
 ##################### 用户画像 ##########################
 
 def load_user_image():
-    dfuimageRaw = dfBuilder('客户画像').ix[:, [
-                   '客户代码', '性别', '年龄', '婚姻', '学历', '从属行业', '理财抗风险等级', '客户层级', '新老客户标记',
-                  '五级分类', '小微客户类型', '消费类资产产品', '纯消费性微贷标记', '纯质押贷款标记', '非储投资偏好',
-                  '高金融资产标记', '购买大额他行理财标记', '大额消费标记', '信用卡高还款标记', '信用卡高端消费标记',
-                  '优质行业标记', '高代发额客户标记', '潜在高端客户标记', '客户贡献度', '客户活跃度', '客户渠道偏好',
-                  '客户金融资产偏好']]
-    # select cols
-    dfuimage = dfuimageRaw.copy()
-    print_msg('Uimage Raw shape: ' + str(dfuimage.shape))
+    try:
+        dfuimageRaw = dfBuilder('客户画像').ix[:, [
+                       '客户代码', '性别', '年龄', '婚姻', '学历', '从属行业', '理财抗风险等级', '客户层级', '新老客户标记',
+                      '五级分类', '小微客户类型', '消费类资产产品', '纯消费性微贷标记', '纯质押贷款标记', '非储投资偏好',
+                      '高金融资产标记', '购买大额他行理财标记', '大额消费标记', '信用卡高还款标记', '信用卡高端消费标记',
+                      '优质行业标记', '高代发额客户标记', '潜在高端客户标记', '客户贡献度', '客户活跃度', '客户渠道偏好',
+                      '客户金融资产偏好']]
+        # select cols
+        dfuimage = dfuimageRaw.copy()
+        print_msg('Uimage Raw shape: ' + str(dfuimage.shape))
 
-    # outlier
-    dfuimage['年龄'] = dfuimage['年龄'].apply(lambda x: x if x < 120 else 120)
+        # outlier
+        dfuimage['年龄'] = dfuimage['年龄'].apply(lambda x: x if x < 120 else 120)
 
-    # mapping
-    UimageMapTable = pd.read_csv(maptableDir, header = None)
-    UimageMapTable = UimageMapTable.ix[:, :1].values
-    UimageMapTable = np.vstack((UimageMapTable,
-        ['科学研究、技术服务和地质勘探业', 3],
-        ['非储中贵金属偏好', 3],
-        ['商铺按揭,住房按揭', 3],
-        ['商铺按揭,消费型微贷,', 3],
-        ['其他消费类,消费型微', 3]))
-    dfuimage.rename(columns = { '客户代码': '核心客户号' }, inplace = True)
-    for k,v in UimageMapTable:
-        try:
-            dfuimage.replace(k, v, inplace = True)
-        except Exception as ex:
-            print(ex, flush = True)
-    print_msg('Uimage After clean shape: ' + str(dfuimage.shape))
+        # mapping
+        UimageMapTable = pd.read_csv(maptableDir, header = None)
+        UimageMapTable = UimageMapTable.ix[:, :1].values
+        UimageMapTable = np.vstack((UimageMapTable,
+            ['科学研究、技术服务和地质勘探业', 3],
+            ['非储中贵金属偏好', 3],
+            ['商铺按揭,住房按揭', 3],
+            ['商铺按揭,消费型微贷,', 3],
+            ['其他消费类,消费型微', 3]))
+        dfuimage.rename(columns = { '客户代码': '核心客户号' }, inplace = True)
+        for k,v in UimageMapTable:
+            try:
+                dfuimage.replace(k, v, inplace = True)
+            except Exception as ex:
+                print(ex, flush = True)
+        print_msg('Uimage After clean shape: ' + str(dfuimage.shape))
+    except Exception:
+        progress_failed('cleaned')
+    else:
+        incr_progress('cleaned', 0.15)
     return (dfuimage, dfuimageRaw)
 
 future_load_user_image = computePool.submit(load_user_image)
@@ -142,34 +184,37 @@ future_load_user_image = computePool.submit(load_user_image)
 ##################### 基本信息 ##########################
 
 def load_user_info():
-    dfuinfo = dfBuilder('基本信息')
-    print_msg('Uinfo Raw shape: ' + str(dfuinfo.shape))
-
-    # selectCols
-    dfuinfo = dfuinfo.loc[:, [
-                 '核心客户号', '首次开户日期', '贵宾客户等级描述', '账户即时通签约标志',  '活期余额', '存款余额月日均',
-                 '存款余额年日均', '存款占比', '理财占比', '金融资产余额', '金融资产余额月日均', '金融资产余额年日均',
-                 '持有定期存款标志', '手机银行签约标志', '三方存管签约标志', '网银签约标志', '代发工资签约标志',
-                 '信用卡绑定还款签约标志', '按揭贷款标志',
-                 '当年购买理财标志', '钱生钱签约标志',  '资金归集签约标志', '乐收银签约标志',
-                 '近三个月柜面存款次数', '近三个月柜面存款金额', '近三个月柜面取款次数', '近三个月柜面取款金额',
-                 '近三个月柜面转账次数', '近三个月柜面转账金额', '近三个月ATM存款次数', '近三个月ATM存款金额',
-                 '近三个月ATM取款次数', '近三个月ATM取款金额', '近三个月网银转账次数', '近三个月网银转账金额',
-                 '近三个月手机银行转账次数', '近三个月手机银行转账金额', '近三个月手机银行支付交易次数',
-                 '近三个月手机银行支付交易金额', '近三个月手机银行缴费次数', '近三个月手机银行缴费金额',
-                 '近三个月手机银行手机充值次数', '近三个月手机银行手机充值金额', '近三个月POS消费次数',
-                 '近三个月POS消费金额', '近三个月跨行资金归集交易次数', '近三个月跨行资金归集交易金额',
-                 '近三个月跨行通交易次数', '近三个月跨行通交易金额', '近三个月交易次数合计', '交易活跃度描述']]
-    mappingTable = { '无效户': 0, '有效户': 1, '私人': 2, '银卡': 3, '金卡': 4, '钻卡': 5 }
-    # transform
-    dfuinfo['贵宾客户等级描述'] = dfuinfo['贵宾客户等级描述'].map(lambda x: mappingTable[x])
-    dfuinfo['首次开户日期'] = pd.to_datetime(dfuinfo['首次开户日期'], infer_datetime_format = True)
-    dfuinfo['开户年数'] = dfuinfo['首次开户日期'].map(lambda x: now.year - x.year )
-    dfuinfo['交易活跃度描述'] = dfuinfo['交易活跃度描述'].apply(lambda x: 1 if x == '高活跃' else 0)
-
-    #drop
-    dfuinfo.drop(['首次开户日期'], axis = 1, inplace = True)
-    print_msg('Uinfo after clean shape: ' + str(dfuinfo.shape))
+    try:
+        dfuinfo = dfBuilder('基本信息')
+        print_msg('Uinfo Raw shape: ' + str(dfuinfo.shape))
+        # selectCols
+        dfuinfo = dfuinfo.loc[:, [
+                     '核心客户号', '首次开户日期', '贵宾客户等级描述', '账户即时通签约标志',  '活期余额', '存款余额月日均',
+                     '存款余额年日均', '存款占比', '理财占比', '金融资产余额', '金融资产余额月日均', '金融资产余额年日均',
+                     '持有定期存款标志', '手机银行签约标志', '三方存管签约标志', '网银签约标志', '代发工资签约标志',
+                     '信用卡绑定还款签约标志', '按揭贷款标志',
+                     '当年购买理财标志', '钱生钱签约标志',  '资金归集签约标志', '乐收银签约标志',
+                     '近三个月柜面存款次数', '近三个月柜面存款金额', '近三个月柜面取款次数', '近三个月柜面取款金额',
+                     '近三个月柜面转账次数', '近三个月柜面转账金额', '近三个月ATM存款次数', '近三个月ATM存款金额',
+                     '近三个月ATM取款次数', '近三个月ATM取款金额', '近三个月网银转账次数', '近三个月网银转账金额',
+                     '近三个月手机银行转账次数', '近三个月手机银行转账金额', '近三个月手机银行支付交易次数',
+                     '近三个月手机银行支付交易金额', '近三个月手机银行缴费次数', '近三个月手机银行缴费金额',
+                     '近三个月手机银行手机充值次数', '近三个月手机银行手机充值金额', '近三个月POS消费次数',
+                     '近三个月POS消费金额', '近三个月跨行资金归集交易次数', '近三个月跨行资金归集交易金额',
+                     '近三个月跨行通交易次数', '近三个月跨行通交易金额', '近三个月交易次数合计', '交易活跃度描述']]
+        mappingTable = { '无效户': 0, '有效户': 1, '私人': 2, '银卡': 3, '金卡': 4, '钻卡': 5 }
+        # transform
+        dfuinfo['贵宾客户等级描述'] = dfuinfo['贵宾客户等级描述'].map(lambda x: mappingTable[x])
+        dfuinfo['首次开户日期'] = pd.to_datetime(dfuinfo['首次开户日期'], infer_datetime_format = True)
+        dfuinfo['开户年数'] = dfuinfo['首次开户日期'].map(lambda x: now.year - x.year )
+        dfuinfo['交易活跃度描述'] = dfuinfo['交易活跃度描述'].apply(lambda x: 1 if x == '高活跃' else 0)
+        #drop
+        dfuinfo.drop(['首次开户日期'], axis = 1, inplace = True)
+        print_msg('Uinfo after clean shape: ' + str(dfuinfo.shape))
+    except Exception:
+        progress_failed('cleaned')
+    else:
+        incr_progress('cleaned', 0.15)
     return dfuinfo
 
 future_load_user_info = computePool.submit(load_user_info)
@@ -177,17 +222,22 @@ future_load_user_info = computePool.submit(load_user_info)
 ##################### 产品交易 ##########################
 
 def load_trade():
-    dftrade = dfBuilder('产品交易')
-    print_msg('Trade Raw shape: ' + str(dftrade.shape))
+    try:
+        dftrade = dfBuilder('产品交易')
+        print_msg('Trade Raw shape: ' + str(dftrade.shape))
 
-    # rename index column
-    dftrade.rename(columns = { '核心客户号': 'HXKHH' }, inplace = True)
-    dftrade.rename(columns={ 'khdm': '核心客户号' }, inplace = True)
+        # rename index column
+        dftrade.rename(columns = { '核心客户号': 'HXKHH' }, inplace = True)
+        dftrade.rename(columns={ 'khdm': '核心客户号' }, inplace = True)
 
-    #drop
-    dftrade.drop(labels = ['统计日期', 'HXKHH', 'CUST_NAME'], axis = 1, inplace = True)
-    dftrade.dropna(inplace = True)
-    print_msg('Trade after clean shape: ' + str(dftrade.shape))
+        #drop
+        dftrade.drop(labels = ['统计日期', 'HXKHH', 'CUST_NAME'], axis = 1, inplace = True)
+        dftrade.dropna(inplace = True)
+        print_msg('Trade after clean shape: ' + str(dftrade.shape))
+    except Exception:
+        progress_failed('cleaned')
+    else:
+        incr_progress('cleaned', 0.15)
     return dftrade
 
 future_load_trade = computePool.submit(load_trade)
@@ -195,35 +245,40 @@ future_load_trade = computePool.submit(load_trade)
 ##################### 金融资产 ##########################
 
 def load_asset():
-    dfasset = dfBuilder('金融资产', drop = False)
-    print_msg('Asset Raw shape: ' + str(dfasset.shape))
+    try:
+        dfasset = dfBuilder('金融资产', drop = False)
+        print_msg('Asset Raw shape: ' + str(dfasset.shape))
 
-    if not Consider0BalanceAsPositive:
-        uid107 = dfasset.ix[(dfasset['金融资产代码'] == 107) & (dfasset['金融资产余额'] != 0), '核心客户号'].drop_duplicates().values
-        uid170 = dfasset.ix[(dfasset['金融资产代码'] == 170) & (dfasset['金融资产余额'] != 0), '核心客户号'].drop_duplicates().values
-        uid130 = dfasset.ix[(dfasset['金融资产代码'] == 130) & (dfasset['金融资产余额'] != 0), '核心客户号'].drop_duplicates().values
+        if not Consider0BalanceAsPositive:
+            uid107 = dfasset.ix[(dfasset['金融资产代码'] == 107) & (dfasset['金融资产余额'] != 0), '核心客户号'].drop_duplicates().values
+            uid170 = dfasset.ix[(dfasset['金融资产代码'] == 170) & (dfasset['金融资产余额'] != 0), '核心客户号'].drop_duplicates().values
+            uid130 = dfasset.ix[(dfasset['金融资产代码'] == 130) & (dfasset['金融资产余额'] != 0), '核心客户号'].drop_duplicates().values
+        else:
+            uid107 = dfasset.ix[dfasset['金融资产代码'] == 107, '核心客户号'].drop_duplicates().values
+            uid170 = dfasset.ix[dfasset['金融资产代码'] == 170, '核心客户号'].drop_duplicates().values
+            uid130 = dfasset.ix[dfasset['金融资产代码'] == 130, '核心客户号'].drop_duplicates().values
+
+        # select rows based on none-info leaking asset codes
+        dfasset = dfasset.ix[(~dfasset['金融资产代码'].isin([107, 170, 130, 131, 1071, 1072, 104, 121, 150]) & (dfasset['金融资产余额'] != 0)), :]
+
+        # flattern assets
+        dfs = []
+        for code, df in dfasset.groupby('金融资产代码'):
+            df['金融资产余额_' + str(code)] = df['金融资产余额'].values
+            df['金融资产余额季日均_' + str(code)] = df['金融资产余额季日均'].values
+            newdf = df.ix[:, ['核心客户号', '金融资产余额_' + str(code), '金融资产余额季日均_' + str(code)]]
+            # user can not hold one asset with multipul records
+            newdf.drop_duplicates(subset = '核心客户号', inplace = True)
+            newdf.set_index('核心客户号', drop = True, inplace = True)
+            dfs.append(newdf)
+
+        dfasset_dummy = dfs[0].join(dfs[1:])
+        dfasset_dummy.fillna(0, inplace = True)
+        print_msg('Asset after clean shape: ' + str(dfasset_dummy.shape))
+    except Exception:
+        progress_failed('cleaned')
     else:
-        uid107 = dfasset.ix[dfasset['金融资产代码'] == 107, '核心客户号'].drop_duplicates().values
-        uid170 = dfasset.ix[dfasset['金融资产代码'] == 170, '核心客户号'].drop_duplicates().values
-        uid130 = dfasset.ix[dfasset['金融资产代码'] == 130, '核心客户号'].drop_duplicates().values
-
-    # select rows based on none-info leaking asset codes
-    dfasset = dfasset.ix[(~dfasset['金融资产代码'].isin([107, 170, 130, 131, 1071, 1072, 104, 121, 150]) & (dfasset['金融资产余额'] != 0)), :]
-
-    # flattern assets
-    dfs = []
-    for code, df in dfasset.groupby('金融资产代码'):
-        df['金融资产余额_' + str(code)] = df['金融资产余额'].values
-        df['金融资产余额季日均_' + str(code)] = df['金融资产余额季日均'].values
-        newdf = df.ix[:, ['核心客户号', '金融资产余额_' + str(code), '金融资产余额季日均_' + str(code)]]
-        # user can not hold one asset with multipul records
-        newdf.drop_duplicates(subset = '核心客户号', inplace = True)
-        newdf.set_index('核心客户号', drop = True, inplace = True)
-        dfs.append(newdf)
-
-    dfasset_dummy = dfs[0].join(dfs[1:])
-    dfasset_dummy.fillna(0, inplace = True)
-    print_msg('Asset after clean shape: ' + str(dfasset_dummy.shape))
+        incr_progress('cleaned', 0.15)
     return (dfasset_dummy, uid107, uid170, uid130)
 
 future_load_asset = computePool.submit(load_asset)
@@ -231,20 +286,12 @@ future_load_asset = computePool.submit(load_asset)
 ##################### JOIN DATA ##########################
 
 (dfuimage, dfuimageRaw) = future_load_user_image.result()
-progress += 0.01
-print_progress()
 
 dfuinfo = future_load_user_info.result()
-progress += 0.01
-print_progress()
 
 dftrade = future_load_trade.result()
-progress += 0.01
-print_progress()
 
 (dfasset_dummy, uid107, uid170, uid130) = future_load_asset.result()
-progress += 0.01
-print_progress()
 
 dfuimage['Y107'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid107 else 0)
 dfuimage['Y170'] = dfuimage['核心客户号'].apply(lambda x: 1 if x in uid170 else 0)
@@ -259,54 +306,66 @@ dfXY.fillna(0, inplace = True)
 
 # warning! dfXY.drop_duplicates(on all features).shape != (on uid only).shape
 dfXY = dfXY.reset_index().drop_duplicates(subset = '核心客户号').set_index('核心客户号')
+if dfXY.shape[0] == 0:
+    raise Exception('No data at all!')
+
 print_msg('Joint Master dataframe shape: ' + str(dfXY.shape))
 
 def save_master_df(dfXY):
-    dfXY.to_csv(path.join(dataDir, 'MasterDf.csv'))
+    try:
+        dfXY.to_csv(path.join(dataDir, 'MasterDf.csv'))
+    except Exception:
+        progress_failed('cleaned')
+    else:
+        incr_progress('cleaned', 0.15)
 ioPool.submit(save_master_df, dfXY)
-progress += 0.03
-print_progress()
 
 ##################### Generate cleaned.csv ##########################
 
 def save_cleaned_csv(dfCleaned):
-    dfCleaned.to_csv(path.join(dataDir, 'cleaned.csv'), index = False)
-    print_msg('Final, cleaned.csv shape: ' + str(dfCleaned.shape))
+    try:
+        dfCleaned.to_csv(path.join(dataDir, 'cleaned.csv'), index = False)
+    except Exception:
+        progress_failed('cleaned')
+    else:
+        progress_done('cleaned')
 
 def generate_cleaned_csv():
-    dforgs = dfBuilder('对应机构')
-    dforgs.drop_duplicates(inplace = True)
-    dforgs.set_index('khdm', drop = True, inplace = True)
-    dforgs.rename(columns = { 'jgmc': '所属机构' }, inplace = True)
+    try:
+        dforgs = dfBuilder('对应机构')
+        dforgs.drop_duplicates(inplace = True)
+        dforgs.set_index('khdm', drop = True, inplace = True)
+        dforgs.rename(columns = { 'jgmc': '所属机构' }, inplace = True)
 
-    global dfXY
-    dfXYimage = dfXY[dfuimage.columns.values]
-    print_msg('XYimageshape: ' + str(dfXYimage.shape))
+        global dfXY
+        dfXYimage = dfXY[dfuimage.columns.values]
+        print_msg('XYimageshape: ' + str(dfXYimage.shape))
 
-    dfCleaned = dfXYimage.join(dforgs, how = 'left')
-    print_msg('after join orgs, cleaned.csv shape: ' + str(dfCleaned.shape))
+        dfCleaned = dfXYimage.join(dforgs, how = 'left')
+        print_msg('after join orgs, cleaned.csv shape: ' + str(dfCleaned.shape))
 
-    # convert to raw uimage data
-    dfuimageRaw.set_index('客户代码', drop = True, inplace = True)
-    dfuimageRaw.drop_duplicates(inplace = True)
-    dfCleaned = dfCleaned.ix[:, -4:].join(dfuimageRaw, how = 'left')
-    print_msg('after join uimageRaw, cleaned.csv shape: ' + str(dfCleaned.shape))
+        # convert to raw uimage data
+        dfuimageRaw.set_index('客户代码', drop = True, inplace = True)
+        dfuimageRaw.drop_duplicates(inplace = True)
+        dfCleaned = dfCleaned.ix[:, -4:].join(dfuimageRaw, how = 'left')
+        print_msg('after join uimageRaw, cleaned.csv shape: ' + str(dfCleaned.shape))
 
-    dfCleaned[yCols] = dfCleaned[yCols].astype(str)
-    dfCleaned['核心客户号'] = dfCleaned.index.values
-    dfCleaned.drop_duplicates(subset = ['核心客户号'], inplace = True)
-    dfCleaned.rename(columns = { 'Y107': '主动负债', 'Y170': '保险', 'Y130': '基金' }, inplace = True)
-    dfCleaned.replace(to_replace = { '主动负债': { "0": '未持有', "1": '持有' },
-                                     '保险': { "0": '未持有', "1": '持有' },
-                                     '基金': { "0": '未持有', "1": '持有' } }, inplace = True)
+        dfCleaned[yCols] = dfCleaned[yCols].astype(str)
+        dfCleaned['核心客户号'] = dfCleaned.index.values
+        dfCleaned.drop_duplicates(subset = ['核心客户号'], inplace = True)
+        dfCleaned.rename(columns = { 'Y107': '主动负债', 'Y170': '保险', 'Y130': '基金' }, inplace = True)
+        dfCleaned.replace(to_replace = { '主动负债': { "0": '未持有', "1": '持有' },
+                                         '保险': { "0": '未持有', "1": '持有' },
+                                         '基金': { "0": '未持有', "1": '持有' } }, inplace = True)
 
-    print_msg('After drop dups UID, cleaned.csv shape: ' + str(dfCleaned.shape))
-    ioPool.submit(save_cleaned_csv, dfCleaned)
+        print_msg('After drop dups UID, cleaned.csv shape: ' + str(dfCleaned.shape))
+        ioPool.submit(save_cleaned_csv, dfCleaned)
 
-    assert dfXY.shape[0] == dfCleaned.shape[0]
-    global progress
-    progress += 0.02
-    print_progress()
+        assert dfXY.shape[0] == dfCleaned.shape[0]
+    except Exception:
+        progress_failed('cleaned')
+    else:
+        incr_progress('cleaned', 0.15)
     gc.collect()
 
 computePool.submit(generate_cleaned_csv)
@@ -314,6 +373,8 @@ computePool.submit(generate_cleaned_csv)
 #####################################
 ##          TRANSFORM              ##
 #####################################
+
+init_progress('transformed')
 
 print_msg('Transforming data...')
 
@@ -347,15 +408,23 @@ def generate_filter(target, X):
     return (name, svmfilter)
 
 def save_filters(filters):
-    with open(path.join(dataDir, 'FilterDic.pkl'), 'wb') as f:
-        pkl.dump(filters, f)
+    try:
+        with open(path.join(dataDir, 'FilterDic.pkl'), 'wb') as f:
+            pkl.dump(filters, f)
+    except Exception:
+        progress_failed('transformed')
+    else:
+        progress_done('transformed')
 
-X = scaler.fit_transform(dfX)
-progress += 0.06
-print_progress()
+try:
+    X = scaler.fit_transform(dfX)
+except Exception:
+    progress_failed('transformed')
+else:
+    incr_progress('transformed', 0.3)
 
 print_msg('Generating filters...')
-step = 0.15 / len(yCols)
+step = 0.6 / len(yCols)
 filters = {}
 future_to_target = { computePool.submit(generate_filter, target, X): target for target in yCols }
 for future in futures.as_completed(future_to_target):
@@ -363,12 +432,11 @@ for future in futures.as_completed(future_to_target):
     try:
         (name, svmfilter) = future.result()
     except Exception as ex:
-        print('Filter %r generated an exception.' % (target))
-        raise ex
+        print('Filter %r generated an exception: %s.' % (target, ex))
+        progress_failed('transformed')
     else:
+        incr_progress('transformed', step)
         filters[name] = svmfilter
-    progress += step
-    print_progress()
 ioPool.submit(save_filters, filters)
 
 gc.collect()
@@ -377,13 +445,20 @@ gc.collect()
 ##          PARAMS                 ##
 #####################################
 
+init_progress('params')
+
 print_msg('Calculating parameters...')
 
 jsonNameTails = list(map(lambda x: '_' + x[1:], yCols))
 
 def save_params_json(params):
-    with open(path.join(dataDir, 'params.json'), 'w') as f:
-        json.dump(params, f)
+    try:
+        with open(path.join(dataDir, 'params.json'), 'w') as f:
+            json.dump(params, f, sort_keys = True, indent = 4)
+    except Exception:
+        progress_failed('params')
+    else:
+        progress_done('params')
 
 def generate_params():
     params = []
@@ -391,18 +466,19 @@ def generate_params():
     for kp, vp in ioDic.items():
         for kf in jsonNameTails:
             params.append({ 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf })
+    incr_progress('params', 0.5)
     ioPool.submit(save_params_json, params)
     return params
 
 params = generate_params()
-progress += 0.02
-print_progress()
 
 gc.collect()
 
 #####################################
 ##          RESULTS                ##
 #####################################
+
+metaJson['result'] = []
 
 def calculte_distance_matrix(X):
     return pdist(X, metric = 'euclidean')
@@ -424,7 +500,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
                                          verbose = False)
         mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                            exponent = 1, verbose = False)
-    except Exception as ex:
+    except Exception:
         return (-1, file_name)
     else:
         if mapper_output.stopFlag:
@@ -439,8 +515,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
 
 print_msg('Calculating distance matrix...')
 dist_matrix = calculte_distance_matrix(X)
-progress += 0.4
-print_progress()
+print_msg('<<<0.2>>>')
 
 gc.collect()
 
@@ -448,22 +523,24 @@ print_msg('Calculating topology graph...')
 resultsDir = path.join(dataDir, 'results')
 future_to_param = { computePool.submit(core_wrapper, resultsDir, dist_matrix,
                     param['interval'], param['overlap'], param['assetCode']): param for param in params }
-step = 0.28 / len(params)
+p = 0.2
+step = 0.8 / len(params)
 for future in futures.as_completed(future_to_param):
     param = future_to_param[future]
     try:
         (status, file_name) = future.result()
     except Exception as ex:
         file_name = param_to_file_name(param['interval'], param['overlap'], param['assetCode'])
+        status = -1
         print('Result %r generated an exception: %s' % (file_name, ex))
-        print_msg('<<<' + file_name + ':-1>>>')
-    else:
-        print_msg('<<<' + file_name + ':' + status + '>>>')
-    progress += step
-    print_progress()
+    print_msg('<<<' + file_name + ':' + status + '>>>')
+    metaJson['result'].append({ file_name + '.json': status })
+    update_metadata()
+    p += step
+    print_msg('<<<{0:.2f}>>>'.format(p))
 
-progress = 1.0
-print_progress()
+print_msg('<<<1>>>')
+all_done()
 
 computePool.shutdown()
 ioPool.shutdown()
