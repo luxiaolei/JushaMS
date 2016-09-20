@@ -288,7 +288,7 @@ def jushacore(pcd, filt, cover, cutoff,
     M = jusha_output(point_labels=point_labels)
 
     #xl_add, fixed core dump error, when wrapped
-    cores = cpu_count()
+    cores = int(max(2, cpu_count() / 4))
     #cores = 1
 
     if verbose:
@@ -320,7 +320,7 @@ def jushacore(pcd, filt, cover, cutoff,
         work_queue.put(None)
     for t in threads:
         t.join()
-  
+
     assert work_queue.empty(), ('Work qeue is not empty. Probably there was '
                                 'an error in one of the parallel jushacore '
                                 'threads.')

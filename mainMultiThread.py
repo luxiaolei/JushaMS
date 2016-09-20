@@ -1,7 +1,7 @@
 """
 mainMultiThread.py
 >>>>>>>>>>Run command from terminal:
-* python3 mainMultiThread.py $DATA_DIR
+* python3 mainMultiThread.py $DATA_DIR [$MAX_WORKERS]
 """
 import warnings
 warnings.filterwarnings('ignore')
@@ -14,6 +14,7 @@ from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from os import path
 from datetime import datetime
+from multiprocessing import cpu_count
 
 import pickle as pkl
 import json
@@ -36,7 +37,7 @@ now = datetime.now()
 print('================ Start at ' + str(now) + ' ================', flush = True)
 
 ioPool = ThreadPoolExecutor(max_workers = 1)
-computePool = ThreadPoolExecutor(max_workers = 4)
+computePool = ThreadPoolExecutor(max_workers = int(max(2, cpu_count() / 4)) if len(sys.argv) < 3 else int(sys.argv[2]))
 
 dataDir = sys.argv[1]
 confUser['DATADIR'] = dataDir
@@ -416,12 +417,19 @@ def save_filters(filters):
     else:
         progress_done('transformed')
 
+def calculte_distance_matrix(X):
+    print_msg('Calculating distance matrix...')
+    print_msg('<<<<<Progress[results]: 0.0>>>>>')
+    return pdist(X, metric = 'euclidean')
+    # return pairwise_distances(X, metric = 'euclidean', n_jobs = 16)
+
 try:
     X = scaler.fit_transform(dfX)
 except Exception:
     progress_failed('transformed')
 else:
     incr_progress('transformed', 0.3)
+    future_calculte_distance_matrix = computePool.submit(calculte_distance_matrix, X)
 
 print_msg('Generating filters...')
 step = 0.6 / len(yCols)
@@ -480,10 +488,6 @@ gc.collect()
 
 metaJson['results'] = []
 
-def calculte_distance_matrix(X):
-    return pdist(X, metric = 'euclidean')
-    # return pairwise_distances(X, metric = 'euclidean', n_jobs = 16)
-
 def param_to_file_name(interval, overlap, assetCode):
     return 'i' + str(interval) + 'o' + str(overlap) + assetCode
 
@@ -513,9 +517,12 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
             print_msg('Core ran finished! with: ' + file_name)
             return (1, file_name)
 
-print_msg('Calculating distance matrix...')
-dist_matrix = calculte_distance_matrix(X)
-print_msg('<<<<<Progress[results]: 0.2>>>>>')
+try:
+    dist_matrix = future_calculte_distance_matrix.result()
+except Except:
+    progress_failed('results')
+else:
+    print_msg('<<<<<Progress[results]: 0.3>>>>>')
 
 gc.collect()
 
@@ -523,8 +530,8 @@ print_msg('Calculating topology graph...')
 resultsDir = path.join(dataDir, 'results')
 future_to_param = { computePool.submit(core_wrapper, resultsDir, dist_matrix,
                     param['interval'], param['overlap'], param['assetCode']): param for param in params }
-p = 0.2
-step = 0.8 / len(params)
+p = 0.3
+step = 0.7 / len(params)
 for future in futures.as_completed(future_to_param):
     param = future_to_param[future]
     try:
