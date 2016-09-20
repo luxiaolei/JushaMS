@@ -421,7 +421,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
         mapper_output = mapper.jushacore(data, filter, cover = cover, cutoff = None,
                                          cluster = mapper.single_linkage(),
                                          metricpar = { 'metric': 'euclidean' },
-                                         verbose=True)
+                                         verbose = False)
         mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                            exponent = 1, verbose = False)
     except Exception as ex:
