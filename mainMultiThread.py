@@ -43,7 +43,7 @@ confUser['DATADIR'] = dataDir
 interval = confUser['interval']
 overlap = confUser['overlap']
 metaJsonFile = path.join(dataDir, 'metadata.json')
-metaJson = json.load(open(metaJsonFile, 'r'))
+metaJson = json.load(open(metaJsonFile, 'r', encoding = 'utf8'))
 
 yCols = ['Y107', 'Y170', 'Y130']
 
@@ -58,8 +58,8 @@ def print_msg(msg):
 def save_metadata_json_file():
     global metaJsonFile
     global metaJson
-    with open(metaJsonFile, 'w') as f:
-        json.dump(metaJson, f, sort_keys = True, indent = 4)
+    with open(metaJsonFile, 'w', encoding = 'utf8') as f:
+        json.dump(metaJson, f, ensure_ascii = False, sort_keys = True, indent = 4)
 
 def update_metadata():
     ioPool.submit(save_metadata_json_file)
@@ -453,8 +453,8 @@ jsonNameTails = list(map(lambda x: '_' + x[1:], yCols))
 
 def save_params_json(params):
     try:
-        with open(path.join(dataDir, 'params.json'), 'w') as f:
-            json.dump(params, f, sort_keys = True, indent = 4)
+        with open(path.join(dataDir, 'params.json'), 'w', encoding = 'utf8') as f:
+            json.dump(params, f, ensure_ascii = False, sort_keys = True, indent = 4)
     except Exception:
         progress_failed('params')
     else:
