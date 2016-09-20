@@ -43,7 +43,7 @@ confUser['DATADIR'] = dataDir
 interval = confUser['interval']
 overlap = confUser['overlap']
 metaJsonFile = path.join(dataDir, 'metadata.json')
-metaJson = json.load(metaJsonFile)
+metaJson = json.load(open(metaJsonFile, 'r'))
 
 yCols = ['Y107', 'Y170', 'Y130']
 
