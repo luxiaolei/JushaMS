@@ -73,19 +73,19 @@ def incr_progress(key, p):
     global metaJson
     metaJson[key] += p
     update_metadata()
-    print_msg('Progress[' + key + ']: ' + str(metaJson[key]))
+    print_msg('<<<Progress[' + key + ']: ' + str(metaJson[key]) + '>>>')
 
 def progress_done(key):
     global metaJson
     metaJson[key] = 1
     update_metadata()
-    print_msg('Progress[' + key + '] done!')
+    print_msg('<<<Progress[' + key + '] done!>>>')
 
 def progress_failed(key):
     global metaJson
     metaJson[key] = -1
     update_metadata()
-    print_msg('Progress[' + key + '] failed!')
+    print_msg('<<<Progress[' + key + '] failed!>>>')
     time.sleep(2)
     sys.exit(1)
 
@@ -515,7 +515,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
 
 print_msg('Calculating distance matrix...')
 dist_matrix = calculte_distance_matrix(X)
-print_msg('<<<0.2>>>')
+print_msg('<<<Progress[results]: 0.2>>>')
 
 gc.collect()
 
@@ -537,9 +537,9 @@ for future in futures.as_completed(future_to_param):
     metaJson['result'].append({ file_name + '.json': status })
     update_metadata()
     p += step
-    print_msg('<<<{0:.2f}>>>'.format(p))
+    print_msg('<<<Progress[results]: {0:.2f}>>>'.format(p))
 
-print_msg('<<<1>>>')
+print_msg('<<<Progress[results]: done!>>>')
 all_done()
 
 computePool.shutdown()
