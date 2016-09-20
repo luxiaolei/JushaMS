@@ -73,19 +73,19 @@ def incr_progress(key, p):
     global metaJson
     metaJson[key] += p
     update_metadata()
-    print_msg('Progress ' + key + ': 'str(metaJson[key]))
+    print_msg('Progress[' + key + ']: ' + str(metaJson[key]))
 
 def progress_done(key):
     global metaJson
     metaJson[key] = 1
     update_metadata()
-    print_msg('Progress ' + key + ' done!')
+    print_msg('Progress[' + key + '] done!')
 
 def progress_failed(key):
     global metaJson
     metaJson[key] = -1
     update_metadata()
-    print_msg('Progress ' + key + ' failed!')
+    print_msg('Progress[' + key + '] failed!')
     time.sleep(2)
     sys.exit(1)
 
