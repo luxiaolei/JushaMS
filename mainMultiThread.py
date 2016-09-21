@@ -475,6 +475,7 @@ def generate_params():
         for kf in jsonNameTails:
             params.append({ 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf })
     incr_progress('params', 0.5)
+    params.sort(key = lambda x: (x['interval'], x['overlap'], x['assetCode']))
     ioPool.submit(save_params_json, params)
     return params
 
