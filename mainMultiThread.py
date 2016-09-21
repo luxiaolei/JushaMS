@@ -36,7 +36,7 @@ import jushacore as mapper
 now = datetime.now()
 print('================ Start at ' + str(now) + ' ================', flush = True)
 
-ioPool = ThreadPoolExecutor(max_workers = 1)
+ioPool = ThreadPoolExecutor(max_workers = 2)
 computePool = ThreadPoolExecutor(max_workers = 4)
 
 dataDir = sys.argv[1]
@@ -512,7 +512,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
             return (-1, file_name)
         else:
             print_msg(file_name + ' Successed!')
-            print_msg('type check: ' + type(mapper_output))
+            print_msg('type check: ' + str(type(mapper_output)))
             to_d3js_graph(mapper_output, file_name, resultsDir, True)
             print_msg('Core ran finished! with: ' + file_name)
             return (1, file_name)
