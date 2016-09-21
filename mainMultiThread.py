@@ -1,7 +1,7 @@
 """
 mainMultiThread.py
 >>>>>>>>>>Run command from terminal:
-* python3 mainMultiThread.py $DATA_DIR [$MAX_WORKERS]
+* python3 mainMultiThread.py $DATA_DIR
 """
 import warnings
 warnings.filterwarnings('ignore')
@@ -37,7 +37,7 @@ now = datetime.now()
 print('================ Start at ' + str(now) + ' ================', flush = True)
 
 ioPool = ThreadPoolExecutor(max_workers = 1)
-computePool = ThreadPoolExecutor(max_workers = int(max(2, cpu_count() / 4)) if len(sys.argv) < 3 else int(sys.argv[2]))
+computePool = ThreadPoolExecutor(max_workers = 4)
 
 dataDir = sys.argv[1]
 confUser['DATADIR'] = dataDir
@@ -528,7 +528,7 @@ gc.collect()
 
 print_msg('Calculating topology graph...')
 resultsDir = path.join(dataDir, 'results')
-future_to_param = { computePool.submit(core_wrapper, resultsDir, dist_matrix,
+future_to_param = { ioPool.submit(core_wrapper, resultsDir, dist_matrix,
                     param['interval'], param['overlap'], param['assetCode']): param for param in params }
 p = 0.3
 step = 0.7 / len(params)
