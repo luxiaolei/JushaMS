@@ -537,7 +537,7 @@ for param in params:
     except Exception as ex:
         status = -1
         print('Result %r generated an exception: %s' % (file_name, ex))
-    print_msg('!!!!!!!! ' + file_name + ': ' + status + ' !!!!!!!!')
+    print_msg('!!!!!!!! ' + file_name + ': ' + str(status) + ' !!!!!!!!')
     metaJson['results'].append({ file_name + '.json': status })
     update_metadata()
     p += step
