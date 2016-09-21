@@ -36,7 +36,7 @@ import jushacore as mapper
 now = datetime.now()
 print('================ Start at ' + str(now) + ' ================', flush = True)
 
-ioPool = ThreadPoolExecutor(max_workers = 2)
+ioPool = ThreadPoolExecutor(max_workers = 1)
 computePool = ThreadPoolExecutor(max_workers = 4)
 
 dataDir = sys.argv[1]
@@ -491,10 +491,9 @@ metaJson['results'] = []
 def param_to_file_name(interval, overlap, assetCode):
     return 'i' + str(interval) + 'o' + str(overlap) + assetCode
 
-def core_wrapper(resultsDir, data, interval, overlap, assetCode):
+def core_wrapper(resultsDir, data, interval, overlap, assetCode, file_name):
     filter = filters[assetCode]
     print_msg('Data shape: ' + str(data.shape) + ', Filter shape: ' + str(filter.shape))
-    file_name = param_to_file_name(interval, overlap, assetCode)
     print_msg('Calculating topology graph of ' + file_name + '...')
     try:
         cover = mapper.cover.cube_cover_primitive(interval, overlap)
@@ -505,17 +504,17 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode):
         mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                            exponent = 1, verbose = False)
     except Exception:
-        return (-1, file_name)
+        return -1
     else:
         if mapper_output.stopFlag:
             print_msg(file_name + ' Stopped! Too many nodes or too long time')
-            return (-1, file_name)
+            return -1
         else:
             print_msg(file_name + ' Successed!')
             print_msg('type check: ' + str(type(mapper_output)))
             to_d3js_graph(mapper_output, file_name, resultsDir, True)
             print_msg('Core ran finished! with: ' + file_name)
-            return (1, file_name)
+            return 1
 
 try:
     dist_matrix = future_calculte_distance_matrix.result()
@@ -528,16 +527,14 @@ gc.collect()
 
 print_msg('Calculating topology graph...')
 resultsDir = path.join(dataDir, 'results')
-future_to_param = { ioPool.submit(core_wrapper, resultsDir, dist_matrix,
-                    param['interval'], param['overlap'], param['assetCode']): param for param in params }
 p = 0.3
 step = 0.7 / len(params)
-for future in futures.as_completed(future_to_param):
-    param = future_to_param[future]
+for param in params:
+    (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
+    file_name = param_to_file_name(i, o, a)
     try:
-        (status, file_name) = future.result()
+        status = core_wrapper(resultsDir, dist_matrix, i, o, a, file_name)
     except Exception as ex:
-        file_name = param_to_file_name(param['interval'], param['overlap'], param['assetCode'])
         status = -1
         print('Result %r generated an exception: %s' % (file_name, ex))
     print_msg('!!!!!!!! ' + file_name + ': ' + status + ' !!!!!!!!')
