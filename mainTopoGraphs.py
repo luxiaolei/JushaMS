@@ -4,7 +4,7 @@ mainTopoGraphs.py
 * python3 mainTopoGraphs.py $DATA_DIR
 """
 import gc
-from datetime.datetime import now
+from datetime import datetime
 from os import path
 
 import json
@@ -18,7 +18,7 @@ from tools import to_d3js_graph
 ##          GLOBAL VAR             ##
 #####################################
 
-start_at = now()
+start_at = datetime.now()
 print('================ Start at ' + str(start_at) + ' ================', flush = True)
 
 dataDir = sys.argv[1]
@@ -40,7 +40,7 @@ dist_matrix = np.load(open(path.join(dataDir, 'dist_matrix.npy'), 'rb'))
 #####################################
 
 def print_msg(msg):
-    elapsed_time_msg = '========= Elapsed time: {0:.2f} sec =========\n'.format((now() - start_at).total_seconds())
+    elapsed_time_msg = '========= Elapsed time: {0:.2f} sec =========\n'.format((datetime.now() - start_at).total_seconds())
     print(elapsed_time_msg + msg + '\n', end = '', flush = True)
 
 def update_metadata(file_name, status):
