@@ -446,16 +446,20 @@ def save_topo_graph(mapper_output, filter, cover, file_name):
     mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                        exponent = 1, verbose = False)
     update_file_progress(file_name, 0.9)
-    status = 0
-    if mapper_output.stopFlag:
-        print_msg(file_name + ' Stopped! Too many nodes or too long time')
-        status = -1
-    else:
-        print_msg('graph: {0}, nodes: {1}, simplices: {2}'.format(file_name, len(mapper_output.nodes), len(mapper_output.simplices)))
-        to_d3js_graph(mapper_output, file_name, resultsDir, True)
-        status = 1
-    update_file_progress(file_name, status)
-    return status
+    try:
+        status = 0
+        if mapper_output.stopFlag:
+            print_msg(file_name + ' Stopped! Too many nodes or too long time')
+            status = -1
+        else:
+            print_msg('graph: {0}, nodes: {1}, simplices: {2}'.format(file_name, len(mapper_output.nodes), len(mapper_output.simplices)))
+            to_d3js_graph(mapper_output, file_name, resultsDir, True)
+            status = 1
+        update_file_progress(file_name, status)
+        return status
+    except Exception as ex:
+        print_msg('Result %r generated an exception: %s' % (file_name, ex))
+        raise ex
 
 def core_wrapper(interval, overlap, assetCode, file_name):
     global resultsDir
