@@ -451,6 +451,7 @@ def save_topo_graph(mapper_output, filter, cover, file_name):
         print_msg(file_name + ' Stopped! Too many nodes or too long time')
         status = -1
     else:
+        update_file_progress(file_name, 0.91)
         to_d3js_graph(mapper_output, file_name, resultsDir, True)
         status = 1
     update_file_progress(file_name, status)
