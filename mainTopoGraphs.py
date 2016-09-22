@@ -3,6 +3,7 @@ mainTopoGraphs.py
 >>>>>>>>>>Run command from terminal:
 * python3 mainTopoGraphs.py $DATA_DIR
 """
+import sys
 import gc
 from datetime import datetime
 from os import path
