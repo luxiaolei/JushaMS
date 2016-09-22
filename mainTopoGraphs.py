@@ -103,7 +103,7 @@ print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 step = (0.8 - p) / len(params)
 future_to_file = {}
 for param in params:
-    (i, o, a) = (p['interval'], p['overlap'], p['assetCode'])
+    (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
     file_name = 'i' + str(i) + 'o' + str(o) + a
     f = computePool.submit(core_wrapper, i, o, a, file_name)
     future_to_future[f] = file_name
