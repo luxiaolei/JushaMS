@@ -132,6 +132,6 @@ for f in futures.as_completed(future_to_file_status):
         except Exception as ex:
             status = -1
             print_msg('Result %r generated an exception: %s' % (file_name, ex))
-    update_file_progress(file_name, status)
+        update_file_progress(file_name, status)
 
 print_msg('<<<<<Progress[results]: 1>>>>>')
