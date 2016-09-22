@@ -25,7 +25,7 @@ from tools import to_d3js_graph
 start_at = datetime.now()
 print('================ Start at ' + str(start_at) + ' ================', flush = True)
 
-computePool = ThreadPoolExecutor(max_workers = 4)
+computePool = ThreadPoolExecutor(max_workers = 6)
 
 dataDir = sys.argv[1]
 resultsDir = path.join(dataDir, 'results')
@@ -98,7 +98,7 @@ print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 future_to_graph = { computePool.submit(core_wrapper, i, o, a, f): f for (i, o, a, f) in map(extract_param, params)}
 step = (1 - p) / len(params)
 for future in futures.as_completed(future_to_graph):
-    file_name = future_to_target[future]
+    file_name = future_to_graph[future]
     try:
         status = future.result()
     except Exception as ex:

@@ -33,7 +33,7 @@ now = datetime.now()
 print('================ Start at ' + str(now) + ' ================', flush = True)
 
 ioPool = ThreadPoolExecutor(max_workers = 1)
-computePool = ThreadPoolExecutor(max_workers = 4)
+computePool = ThreadPoolExecutor(max_workers = 6)
 
 dataDir = sys.argv[1]
 confUser['DATADIR'] = dataDir
