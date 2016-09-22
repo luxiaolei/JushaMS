@@ -47,7 +47,7 @@ def update_metadata(file_name, status):
     global metaJsonFile
     global metaJson
     name = file_name + '.json'
-    idx = [i for i, x in enumerate(metaJson['results']) if x[name] <= 0][0]
+    idx = [i for i, x in enumerate(metaJson['results']) if x.keys().__contains__(name)][0]
     metaJson['results'][idx][name] = status
     with open(metaJsonFile, 'w', encoding = 'utf8') as f:
         json.dump(metaJson, f, ensure_ascii = False, sort_keys = True, indent = 4)
