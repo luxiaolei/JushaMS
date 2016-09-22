@@ -63,11 +63,11 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
                                      cluster = mapper.single_linkage(),
                                      metricpar = { 'metric': 'euclidean' },
-                                     verbose = False)
+                                     verbose = True)
     print_msg('!!!!!' + file_name + ': 0.3!!!!!')
     gc.collect()
     mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
-                       exponent = 1, verbose = False)
+                       exponent = 1, verbose = True)
     print_msg('!!!!!' + file_name + ': 0.6!!!!!')
     gc.collect()
     if mapper_output.stopFlag:
