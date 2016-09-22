@@ -473,7 +473,7 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     return ioPool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
 dist_matrix = future_calculte_distance_matrix.result()
-del confUser, rawdataDir, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_to_target, jsonNameTails
+del confUser, rawdataDir, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_to_target
 gc.collect()
 
 p = 0.25
