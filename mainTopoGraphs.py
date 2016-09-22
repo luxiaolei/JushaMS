@@ -98,7 +98,7 @@ for param in params:
         status = core_wrapper(i, o, a, file_name)
     except Exception as ex:
         status = -1
-        print('Result %r generated an exception: %s' % (file_name, ex))
+        print_msg('Result %r generated an exception: %s' % (file_name, ex))
     print_msg('!!!!!' + file_name + ': ' + str(status) + '!!!!!')
     update_metadata(file_name, status)
     p += step
