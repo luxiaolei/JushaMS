@@ -67,7 +67,7 @@ def update_file_progress(file_name, p):
 def save_topo_graph(mapper_output, filter, cover, file_name):
     global resultsDir
     mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
-                       exponent = 1, verbose = True)
+                       exponent = 1, verbose = False)
     update_file_progress(file_name, 0.9)
     status = 0
     if mapper_output.stopFlag:
@@ -90,7 +90,7 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
                                      cluster = mapper.single_linkage(),
                                      metricpar = { 'metric': 'euclidean' },
-                                     verbose = True)
+                                     verbose = False)
     update_file_progress(file_name, 0.5)
     gc.collect()
     return ioPool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
