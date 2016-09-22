@@ -7,6 +7,9 @@ import sys
 import gc
 from datetime import datetime
 from os import path
+from multiprocessing import cpu_count
+from concurrent import futures
+from concurrent.futures import ThreadPoolExecutor
 
 import json
 import pickle as pkl
@@ -21,6 +24,8 @@ from tools import to_d3js_graph
 
 start_at = datetime.now()
 print('================ Start at ' + str(start_at) + ' ================', flush = True)
+
+computePool = ThreadPoolExecutor(max_workers = max(4, int(cpu_count() / 2)))
 
 dataDir = sys.argv[1]
 resultsDir = path.join(dataDir, 'results')
@@ -79,6 +84,10 @@ def core_wrapper(interval, overlap, assetCode, file_name):
         gc.collect()
         return 1
 
+def extract_param(p):
+    (i, o, a) = (p['interval'], p['overlap'], p['assetCode'])
+    return (i, o, a, 'i' + str(i) + 'o' + str(o) + a)
+
 #####################################
 ##          RESULTS                ##
 #####################################
@@ -86,12 +95,12 @@ def core_wrapper(interval, overlap, assetCode, file_name):
 p = 0.3
 print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 
+future_to_graph = { computePool.submit(core_wrapper, i, o, a, f): f for (i, o, a, f) in map(extract_param, params)}
 step = (1 - p) / len(params)
-for param in params:
-    (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
-    file_name = 'i' + str(i) + 'o' + str(o) + a
+for future in futures.as_completed(future_to_graph):
+    file_name = future_to_target[future]
     try:
-        status = core_wrapper(i, o, a, file_name)
+        status = future.result()
     except Exception as ex:
         status = -1
         print_msg('Result %r generated an exception: %s' % (file_name, ex))

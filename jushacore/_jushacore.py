@@ -289,7 +289,7 @@ def jushacore(pcd, filt, cover, cutoff,
 
     #xl_add, fixed core dump error, when wrapped
     #cores = cpu_count()
-    cores = 8
+    cores = 1
 
     if verbose:
         print('Number of CPU cores present: {0}'.format(cores))
