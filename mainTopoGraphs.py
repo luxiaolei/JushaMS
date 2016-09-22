@@ -106,7 +106,7 @@ for param in params:
     (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
     file_name = 'i' + str(i) + 'o' + str(o) + a
     f = computePool.submit(core_wrapper, i, o, a, file_name)
-    future_to_future[f] = file_name
+    future_to_file[f] = file_name
     print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
     time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 240))
 step = (0.98 - p) / len(params)
