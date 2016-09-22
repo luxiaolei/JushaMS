@@ -451,8 +451,8 @@ def save_topo_graph(mapper_output, filter, cover, file_name):
         print_msg(file_name + ' Stopped! Too many nodes or too long time')
         status = -1
     else:
+        print_msg('graph: {0}, nodes: {1}, simplices: {2}'.format(file_name, len(mapper_output.nodes), len(mapper_output.simplices)))
         to_d3js_graph(mapper_output, file_name, resultsDir, True)
-        update_file_progress(file_name, 0.99)
         status = 1
     update_file_progress(file_name, status)
     return status
@@ -474,7 +474,7 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
 dist_matrix = future_calculte_distance_matrix.result()
-del confUser, rawdataDir, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_to_target
+del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X
 gc.collect()
 
 p = 0.25
