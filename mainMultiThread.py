@@ -59,10 +59,8 @@ def save_metadata_json_file():
 
 def update_file_status(file_name, status):
     global metaJson
-    name = file_name + '.json'
-    idx = [i for i, x in enumerate(metaJson['results']) if x.keys().__contains__(name)][0]
-    metaJson['results'][idx][name] = status
-    update_metadata()
+    metaJson['results'][file_name] = status
+    save_metadata_json_file()
 
 def update_file_progress(file_name, p):
     print_msg('!!!!!{0}: {1:.2f}!!!!!'.format(file_name, p))
@@ -440,31 +438,6 @@ for future in futures.as_completed(future_to_target):
 progress_done('transformed')
 
 #####################################
-##          PARAMS                 ##
-#####################################
-
-init_progress('params')
-
-print_msg('Calculating parameters...')
-
-jsonNameTails = list(map(lambda x: '_' + x[1:], yCols))
-
-def generate_params():
-    params = []
-    results = []
-    ioDic = genIODic(interval, overlap)
-    for kp, vp in ioDic.items():
-        for kf in jsonNameTails:
-            params.append({ 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf })
-            results.append({ 'i' + str(vp[0]) + 'o' + str(vp[1]) + kf + '.json': 0 })
-    metaJson['results'] = results
-    params.sort(key = lambda x: (x['assetCode'], x['interval'], x['overlap']))
-    progress_done('params')
-    return params
-
-params = generate_params()
-
-#####################################
 ##          RESULTS                ##
 #####################################
 
@@ -500,23 +473,26 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     return ioPool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
 dist_matrix = future_calculte_distance_matrix.result()
-del confUser, interval, overlap, yCols, rawdataDir, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_to_target, jsonNameTails
+del confUser, rawdataDir, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_to_target, jsonNameTails
 gc.collect()
 
 p = 0.25
 print_results_progress(p)
 
-steps = len(params)
+ioDic = genIODic(interval, overlap)
+metaJson['results'] = {}
+
+steps = len(yCols) * len(ioDic)
 step = (0.8 - p) / steps
 future_to_file = {}
-for param in params:
-    (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
-    file_name = 'i' + str(i) + 'o' + str(o) + a
-    f = computePool.submit(core_wrapper, i, o, a, file_name)
-    future_to_file[f] = file_name
-    p += step
-    print_results_progress(p)
-    time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 150))
+for a in map(lambda x: '_' + x[1:], yCols):
+    for i, o in ioDic.items():
+        file_name = 'i' + str(i) + 'o' + str(o) + a
+        f = computePool.submit(core_wrapper, i, o, a, file_name)
+        future_to_file[f] = file_name
+        p += step
+        print_results_progress(p)
+        time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 150))
 step = (0.98 - p) / steps
 future_to_file_status = {}
 for f in futures.as_completed(future_to_file):
