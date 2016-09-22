@@ -107,8 +107,9 @@ for param in params:
     file_name = 'i' + str(i) + 'o' + str(o) + a
     f = computePool.submit(core_wrapper, i, o, a, file_name)
     future_to_file[f] = file_name
+    p += step
     print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
-    time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 240))
+    time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 180))
 step = (0.98 - p) / len(params)
 future_to_file_status = {}
 for f in futures.as_completed(future_to_file):
