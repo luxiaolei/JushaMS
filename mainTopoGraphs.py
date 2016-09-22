@@ -29,7 +29,7 @@ metaJson = json.load(open(metaJsonFile, 'r', encoding = 'utf8'))
 metaJson['results'] = []
 
 params = json.load(open(path.join(dataDir, 'params.json'), 'r', encoding = 'utf8'))
-params.sort(key = lambda x: (x['interval'], x['overlap'], x['assetCode']))
+params.sort(key = lambda x: (x['assetCode'], x['interval'], x['overlap']))
 
 filters = pkl.load(open(path.join(dataDir, 'FilterDic.pkl'), 'rb'))
 
@@ -46,12 +46,9 @@ def print_msg(msg):
 def update_metadata(file_name, status):
     global metaJsonFile
     global metaJson
-    metaJson['results'].append({ file_name + '.json': status })
+    metaJson['results'][file_name + '.json'] = status
     with open(metaJsonFile, 'w', encoding = 'utf8') as f:
         json.dump(metaJson, f, ensure_ascii = False, sort_keys = True, indent = 4)
-
-def param_to_file_name(interval, overlap, assetCode):
-    return 'i' + str(interval) + 'o' + str(overlap) + assetCode
 
 def core_wrapper(interval, overlap, assetCode, file_name):
     global resultsDir
@@ -59,18 +56,18 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     global filters
     filter = filters[assetCode]
     print_msg('Data shape: ' + str(dist_matrix.shape) + ', Filter shape: ' + str(filter.shape))
-    print_msg('!!!!!!!!' + file_name + ': 0!!!!!!!!')
+    print_msg('!!!!!' + file_name + ': 0!!!!!')
     try:
         cover = mapper.cover.cube_cover_primitive(interval, overlap)
         mapper_output = mapper.jushacore(data, filter, cover = cover, cutoff = None,
                                          cluster = mapper.single_linkage(),
                                          metricpar = { 'metric': 'euclidean' },
                                          verbose = False)
-        print_msg('!!!!!!!!' + file_name + ': 0.3!!!!!!!!')
+        print_msg('!!!!!' + file_name + ': 0.3!!!!!')
         gc.collect()
         mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                            exponent = 1, verbose = False)
-        print_msg('!!!!!!!!' + file_name + ': 0.6!!!!!!!!')
+        print_msg('!!!!!' + file_name + ': 0.6!!!!!')
         gc.collect()
     except Exception:
         return -1
@@ -80,7 +77,7 @@ def core_wrapper(interval, overlap, assetCode, file_name):
             return -1
         else:
             to_d3js_graph(mapper_output, file_name, resultsDir, True)
-            print_msg('!!!!!!!!' + file_name + ': 0.9!!!!!!!!')
+            print_msg('!!!!!' + file_name + ': 0.9!!!!!')
             gc.collect()
             return 1
 
@@ -94,13 +91,13 @@ print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 step = (1 - p) / len(params)
 for param in params:
     (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
-    file_name = param_to_file_name(i, o, a)
+    file_name = 'i' + str(i) + 'o' + str(o) + a
     try:
         status = core_wrapper(i, o, a, file_name)
     except Exception as ex:
         status = -1
         print('Result %r generated an exception: %s' % (file_name, ex))
-    print_msg('!!!!!!!!' + file_name + ': ' + str(status) + '!!!!!!!!')
+    print_msg('!!!!!' + file_name + ': ' + str(status) + '!!!!!')
     update_metadata(file_name, status)
     p += step
     print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))

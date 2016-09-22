@@ -464,10 +464,13 @@ def save_params_json(params):
 
 def generate_params():
     params = []
+    results = []
     ioDic = genIODic(interval, overlap)
     for kp, vp in ioDic.items():
         for kf in jsonNameTails:
             params.append({ 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf })
+            results.append({ 'i' + str(vp[0]) + 'o' + str(vp[1]) + kf + '.json': 0 })
+    metaJson['results'] = results
     incr_progress('params', 0.5)
     save_params_json(params)
 
