@@ -59,29 +59,25 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     filter = filters[assetCode]
     print_msg('Data shape: ' + str(dist_matrix.shape) + ', Filter shape: ' + str(filter.shape))
     print_msg('!!!!!' + file_name + ': 0!!!!!')
-    try:
-        cover = mapper.cover.cube_cover_primitive(interval, overlap)
-        mapper_output = mapper.jushacore(data, filter, cover = cover, cutoff = None,
-                                         cluster = mapper.single_linkage(),
-                                         metricpar = { 'metric': 'euclidean' },
-                                         verbose = False)
-        print_msg('!!!!!' + file_name + ': 0.3!!!!!')
-        gc.collect()
-        mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
-                           exponent = 1, verbose = False)
-        print_msg('!!!!!' + file_name + ': 0.6!!!!!')
-        gc.collect()
-    except Exception:
+    cover = mapper.cover.cube_cover_primitive(interval, overlap)
+    mapper_output = mapper.jushacore(data, filter, cover = cover, cutoff = None,
+                                     cluster = mapper.single_linkage(),
+                                     metricpar = { 'metric': 'euclidean' },
+                                     verbose = False)
+    print_msg('!!!!!' + file_name + ': 0.3!!!!!')
+    gc.collect()
+    mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
+                       exponent = 1, verbose = False)
+    print_msg('!!!!!' + file_name + ': 0.6!!!!!')
+    gc.collect()
+    if mapper_output.stopFlag:
+        print_msg(file_name + ' Stopped! Too many nodes or too long time')
         return -1
     else:
-        if mapper_output.stopFlag:
-            print_msg(file_name + ' Stopped! Too many nodes or too long time')
-            return -1
-        else:
-            to_d3js_graph(mapper_output, file_name, resultsDir, True)
-            print_msg('!!!!!' + file_name + ': 0.9!!!!!')
-            gc.collect()
-            return 1
+        to_d3js_graph(mapper_output, file_name, resultsDir, True)
+        print_msg('!!!!!' + file_name + ': 0.9!!!!!')
+        gc.collect()
+        return 1
 
 #####################################
 ##          RESULTS                ##
