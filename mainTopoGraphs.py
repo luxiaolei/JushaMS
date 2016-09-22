@@ -124,7 +124,7 @@ for f in futures.as_completed(future_to_file):
     print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 for f in futures.as_completed(future_to_file_status):
     (file_name, status) = future_to_file_status[f]
-    if status != -1
+    if status != -1:
         try:
             status = f.result()
         except Exception as ex:
