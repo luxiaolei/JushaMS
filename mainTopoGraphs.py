@@ -5,9 +5,9 @@ mainTopoGraphs.py
 """
 import sys
 import gc
+import time
 from datetime import datetime
 from os import path
-from multiprocessing import cpu_count
 from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 
@@ -25,6 +25,7 @@ from tools import to_d3js_graph
 start_at = datetime.now()
 print('================ Start at ' + str(start_at) + ' ================', flush = True)
 
+ioPool = ThreadPoolExecutor(max_workers = 2)
 computePool = ThreadPoolExecutor(max_workers = 4)
 
 dataDir = sys.argv[1]
@@ -39,6 +40,8 @@ params.sort(key = lambda x: (x['assetCode'], x['interval'], x['overlap']))
 filters = pkl.load(open(path.join(dataDir, 'FilterDic.pkl'), 'rb'))
 
 dist_matrix = np.load(open(path.join(dataDir, 'dist_matrix.npy'), 'rb'))
+
+gc.collect()
 
 #####################################
 ##          FUNCTIONS              ##
@@ -57,36 +60,38 @@ def update_metadata(file_name, status):
     with open(metaJsonFile, 'w', encoding = 'utf8') as f:
         json.dump(metaJson, f, ensure_ascii = False, sort_keys = True, indent = 4)
 
+def update_file_progress(file_name, p):
+    print_msg('!!!!!{0}: {1:.2f}!!!!!'.format(file_name, p))
+    update_metadata(file_name, p)
+
+def save_topo_graph(mapper_output, filter, cover, file_name):
+    global resultsDir
+    mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
+                       exponent = 1, verbose = True)
+    update_file_progress(file_name, 0.75)
+    if mapper_output.stopFlag:
+        print_msg(file_name + ' Stopped! Too many nodes or too long time')
+        return -1
+    else:
+        to_d3js_graph(mapper_output, file_name, resultsDir, True)
+        update_file_progress(file_name, 0.9)
+        return 1
+
 def core_wrapper(interval, overlap, assetCode, file_name):
     global resultsDir
     global dist_matrix
     global filters
     filter = filters[assetCode]
     print_msg('Data shape: ' + str(dist_matrix.shape) + ', Filter shape: ' + str(filter.shape))
-    print_msg('!!!!!' + file_name + ': 0!!!!!')
+    update_file_progress(file_name, 0)
     cover = mapper.cover.cube_cover_primitive(interval, overlap)
     mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
                                      cluster = mapper.single_linkage(),
                                      metricpar = { 'metric': 'euclidean' },
                                      verbose = True)
-    print_msg('!!!!!' + file_name + ': 0.3!!!!!')
+    update_file_progress(file_name, 0.5)
     gc.collect()
-    mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
-                       exponent = 1, verbose = True)
-    print_msg('!!!!!' + file_name + ': 0.6!!!!!')
-    gc.collect()
-    if mapper_output.stopFlag:
-        print_msg(file_name + ' Stopped! Too many nodes or too long time')
-        return -1
-    else:
-        to_d3js_graph(mapper_output, file_name, resultsDir, True)
-        print_msg('!!!!!' + file_name + ': 0.9!!!!!')
-        gc.collect()
-        return 1
-
-def extract_param(p):
-    (i, o, a) = (p['interval'], p['overlap'], p['assetCode'])
-    return (i, o, a, 'i' + str(i) + 'o' + str(o) + a)
+    return ioPool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
 #####################################
 ##          RESULTS                ##
@@ -95,18 +100,36 @@ def extract_param(p):
 p = 0.3
 print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 
-future_to_graph = { computePool.submit(core_wrapper, i, o, a, f): f for (i, o, a, f) in map(extract_param, params)}
-step = (1 - p) / len(params)
-for future in futures.as_completed(future_to_graph):
-    file_name = future_to_graph[future]
+step = (0.8 - p) / len(params)
+future_to_file = {}
+for param in params:
+    (i, o, a) = (p['interval'], p['overlap'], p['assetCode'])
+    file_name = 'i' + str(i) + 'o' + str(o) + a
+    f = computePool.submit(core_wrapper, i, o, a, file_name)
+    future_to_future[f] = file_name
+    print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
+    time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 240))
+step = (0.98 - p) / len(params)
+future_to_file_status = {}
+for f in futures.as_completed(future_to_file):
+    file_name = future_to_file[f]
+    status = 0
     try:
-        status = future.result()
+        future = f.result()
     except Exception as ex:
         status = -1
         print_msg('Result %r generated an exception: %s' % (file_name, ex))
-    print_msg('!!!!!' + file_name + ': ' + str(status) + '!!!!!')
-    update_metadata(file_name, status)
+    future_to_file[future] = (file_name, status)
     p += step
     print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
+for f in futures.as_completed(future_to_file_status):
+    (file_name, status) = future_to_file_status[f]
+    if status != -1
+        try:
+            status = f.result()
+        except Exception as ex:
+            status = -1
+            print_msg('Result %r generated an exception: %s' % (file_name, ex))
+    update_file_progress(file_name, status)
 
 print_msg('<<<<<Progress[results]: 1>>>>>')
