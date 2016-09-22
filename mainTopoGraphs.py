@@ -25,7 +25,7 @@ from tools import to_d3js_graph
 start_at = datetime.now()
 print('================ Start at ' + str(start_at) + ' ================', flush = True)
 
-computePool = ThreadPoolExecutor(max_workers = 6)
+computePool = ThreadPoolExecutor(max_workers = 4)
 
 dataDir = sys.argv[1]
 resultsDir = path.join(dataDir, 'results')
