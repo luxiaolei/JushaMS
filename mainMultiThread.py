@@ -486,7 +486,8 @@ steps = len(yCols) * len(ioDic)
 step = (0.8 - p) / steps
 future_to_file = {}
 for a in map(lambda x: '_' + x[1:], yCols):
-    for i, o in ioDic.items():
+    for kp, vp in ioDic.items():
+        (i, o) = (int(vp[0]), int(vp[1]))
         file_name = 'i' + str(i) + 'o' + str(o) + a
         f = computePool.submit(core_wrapper, i, o, a, file_name)
         future_to_file[f] = file_name
