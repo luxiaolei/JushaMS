@@ -51,7 +51,7 @@ def print_msg(msg):
     elapsed_time_msg = '========= Elapsed time: {0:.2f} sec =========\n'.format((datetime.now() - start_at).total_seconds())
     print(elapsed_time_msg + msg + '\n', end = '', flush = True)
 
-def update_file_staus(file_name, status):
+def update_file_status(file_name, status):
     global metaJsonFile
     global metaJson
     name = file_name + '.json'
@@ -62,7 +62,7 @@ def update_file_staus(file_name, status):
 
 def update_file_progress(file_name, p):
     print_msg('!!!!!{0}: {1:.2f}!!!!!'.format(file_name, p))
-    update_file_staus(file_name, p)
+    update_file_status(file_name, p)
 
 def save_topo_graph(mapper_output, filter, cover, file_name):
     global resultsDir
