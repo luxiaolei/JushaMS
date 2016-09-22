@@ -502,8 +502,10 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode, file_name):
                                          cluster = mapper.single_linkage(),
                                          metricpar = { 'metric': 'euclidean' },
                                          verbose = False)
+        gc.collect()
         mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                            exponent = 1, verbose = False)
+        gc.collect()
     except Exception:
         return -1
     else:
@@ -514,6 +516,7 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode, file_name):
             print_msg(file_name + ' Successed!')
             print_msg('type check: ' + str(type(mapper_output)))
             to_d3js_graph(mapper_output, file_name, resultsDir, True)
+            gc.collect()
             print_msg('Core ran finished! with: ' + file_name)
             return 1
 
