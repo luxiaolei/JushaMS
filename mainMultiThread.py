@@ -3,11 +3,7 @@ mainMultiThread.py
 >>>>>>>>>>Run command from terminal:
 * python3 mainMultiThread.py $DATA_DIR
 """
-import warnings
-warnings.filterwarnings('ignore')
-
 import sys
-import gc
 import os
 import time
 from concurrent import futures
@@ -89,9 +85,6 @@ def progress_failed(key):
     print_msg('<<<<<Progress[' + key + ']: -1>>>>>')
     time.sleep(2)
     sys.exit(1)
-
-def all_done():
-    print_msg('ALL DONE!')
 
 #####################################
 ##          CLEAN                  ##
@@ -367,7 +360,6 @@ def generate_cleaned_csv():
         progress_failed('cleaned')
     else:
         incr_progress('cleaned', 0.15)
-    gc.collect()
 
 computePool.submit(generate_cleaned_csv)
 
@@ -420,7 +412,11 @@ def save_filters(filters):
 def calculte_distance_matrix(X):
     print_msg('Calculating distance matrix...')
     print_msg('<<<<<Progress[results]: 0.0>>>>>')
-    return pdist(X, metric = 'euclidean')
+    dist_matrix = pdist(X, metric = 'euclidean')
+    print_msg('<<<<<Progress[results]: 0.1>>>>>')
+    np.save(path.join(dataDir, 'dist_matrix.npy'), dist_matrix)
+    print_msg('<<<<<Progress[results]: 0.2>>>>>')
+    # return pdist(X, metric = 'euclidean')
     # return pairwise_distances(X, metric = 'euclidean', n_jobs = 16)
 
 try:
@@ -446,8 +442,6 @@ for future in futures.as_completed(future_to_target):
         incr_progress('transformed', step)
         filters[name] = svmfilter
 ioPool.submit(save_filters, filters)
-
-gc.collect()
 
 #####################################
 ##          PARAMS                 ##
@@ -475,81 +469,15 @@ def generate_params():
         for kf in jsonNameTails:
             params.append({ 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf })
     incr_progress('params', 0.5)
-    params.sort(key = lambda x: (x['interval'], x['overlap'], x['assetCode']))
-    ioPool.submit(save_params_json, params)
-    return params
+    save_params_json(params)
 
-params = generate_params()
-
-gc.collect()
+generate_params()
 
 #####################################
 ##          RESULTS                ##
 #####################################
 
-metaJson['results'] = []
-
-def param_to_file_name(interval, overlap, assetCode):
-    return 'i' + str(interval) + 'o' + str(overlap) + assetCode
-
-def core_wrapper(resultsDir, data, interval, overlap, assetCode, file_name):
-    filter = filters[assetCode]
-    print_msg('Data shape: ' + str(data.shape) + ', Filter shape: ' + str(filter.shape))
-    print_msg('!!!!!!!!' + file_name + ': 0!!!!!!!!')
-    try:
-        cover = mapper.cover.cube_cover_primitive(interval, overlap)
-        mapper_output = mapper.jushacore(data, filter, cover = cover, cutoff = None,
-                                         cluster = mapper.single_linkage(),
-                                         metricpar = { 'metric': 'euclidean' },
-                                         verbose = False)
-        print_msg('!!!!!!!!' + file_name + ': 0.3!!!!!!!!')
-        gc.collect()
-        mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
-                           exponent = 1, verbose = False)
-        print_msg('!!!!!!!!' + file_name + ': 0.6!!!!!!!!')
-        gc.collect()
-    except Exception:
-        return -1
-    else:
-        if mapper_output.stopFlag:
-            print_msg(file_name + ' Stopped! Too many nodes or too long time')
-            return -1
-        else:
-            to_d3js_graph(mapper_output, file_name, resultsDir, True)
-            print_msg('!!!!!!!!' + file_name + ': 0.9!!!!!!!!')
-            gc.collect()
-            return 1
-
-try:
-    dist_matrix = future_calculte_distance_matrix.result()
-except Except:
-    progress_failed('results')
-else:
-    print_msg('<<<<<Progress[results]: 0.3>>>>>')
-
-gc.collect()
-
-print_msg('Calculating topology graph...')
-resultsDir = path.join(dataDir, 'results')
-p = 0.3
-step = 0.7 / len(params)
-for param in params:
-    (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
-    file_name = param_to_file_name(i, o, a)
-    try:
-        status = core_wrapper(resultsDir, dist_matrix, i, o, a, file_name)
-    except Exception as ex:
-        status = -1
-        print('Result %r generated an exception: %s' % (file_name, ex))
-    print_msg('!!!!!!!!' + file_name + ': ' + str(status) + '!!!!!!!!')
-    metaJson['results'].append({ file_name + '.json': status })
-    update_metadata()
-    p += step
-    print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
-
-print_msg('<<<<<Progress[results]: 1!>>>>>')
-all_done()
+future_calculte_distance_matrix.result()
 
 computePool.shutdown()
 ioPool.shutdown()
-gc.collect()
