@@ -5,14 +5,13 @@ mainMultiThread.py
 """
 import sys
 import os
+import gc
 import time
 from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from os import path
 from datetime import datetime
-from multiprocessing import cpu_count
 
-import pickle as pkl
 import json
 import pandas as pd
 import numpy as np
@@ -22,8 +21,8 @@ from scipy.spatial.distance import pdist
 from sklearn import svm
 
 from __init__ import *
-from tools import genIODic, to_d3js_graph
 import jushacore as mapper
+from tools import genIODic, to_d3js_graph
 
 #####################################
 ##          GLOBAL VAR             ##
@@ -58,6 +57,17 @@ def save_metadata_json_file():
     with open(metaJsonFile, 'w', encoding = 'utf8') as f:
         json.dump(metaJson, f, ensure_ascii = False, sort_keys = True, indent = 4)
 
+def update_file_status(file_name, status):
+    global metaJson
+    name = file_name + '.json'
+    idx = [i for i, x in enumerate(metaJson['results']) if x.keys().__contains__(name)][0]
+    metaJson['results'][idx][name] = status
+    update_metadata()
+
+def update_file_progress(file_name, p):
+    print_msg('!!!!!{0}: {1:.2f}!!!!!'.format(file_name, p))
+    update_file_status(file_name, p)
+
 def update_metadata():
     ioPool.submit(save_metadata_json_file)
 
@@ -85,6 +95,9 @@ def progress_failed(key):
     print_msg('<<<<<Progress[' + key + ']: -1>>>>>')
     time.sleep(2)
     sys.exit(1)
+
+def print_results_progress(p):
+    print_msg('<<<<<Progress[results]: {0:.2f}>>>>>'.format(p))
 
 #####################################
 ##          CLEAN                  ##
@@ -305,14 +318,7 @@ if dfXY.shape[0] == 0:
 
 print_msg('Joint Master dataframe shape: ' + str(dfXY.shape))
 
-def save_master_df(dfXY):
-    try:
-        dfXY.to_csv(path.join(dataDir, 'MasterDf.csv'))
-    except Exception:
-        progress_failed('cleaned')
-    else:
-        incr_progress('cleaned', 0.15)
-ioPool.submit(save_master_df, dfXY)
+incr_progress('cleaned', 0.15)
 
 ##################### Generate cleaned.csv ##########################
 
@@ -400,22 +406,12 @@ def generate_filter(target, X):
     print_msg('Filter of ' + target + ' generated.')
     return (name, svmfilter)
 
-def save_filters(filters):
-    try:
-        with open(path.join(dataDir, 'FilterDic.pkl'), 'wb') as f:
-            pkl.dump(filters, f)
-    except Exception:
-        progress_failed('transformed')
-    else:
-        progress_done('transformed')
-
 def calculte_distance_matrix(X):
     print_msg('Calculating distance matrix...')
-    print_msg('<<<<<Progress[results]: 0.0>>>>>')
+    print_results_progress(0)
     dist_matrix = pdist(X, metric = 'euclidean')
-    print_msg('<<<<<Progress[results]: 0.1>>>>>')
-    np.save(path.join(dataDir, 'dist_matrix.npy'), dist_matrix)
-    print_msg('<<<<<Progress[results]: 0.2>>>>>')
+    print_results_progress(0.2)
+    return dist_matrix
     # return pdist(X, metric = 'euclidean')
     # return pairwise_distances(X, metric = 'euclidean', n_jobs = 16)
 
@@ -436,12 +432,12 @@ for future in futures.as_completed(future_to_target):
     try:
         (name, svmfilter) = future.result()
     except Exception as ex:
-        print('Filter %r generated an exception: %s.' % (target, ex))
+        print_msg('Filter %r generated an exception: %s.' % (target, ex))
         progress_failed('transformed')
     else:
         incr_progress('transformed', step)
         filters[name] = svmfilter
-ioPool.submit(save_filters, filters)
+progress_done('transformed')
 
 #####################################
 ##          PARAMS                 ##
@@ -453,15 +449,6 @@ print_msg('Calculating parameters...')
 
 jsonNameTails = list(map(lambda x: '_' + x[1:], yCols))
 
-def save_params_json(params):
-    try:
-        with open(path.join(dataDir, 'params.json'), 'w', encoding = 'utf8') as f:
-            json.dump(params, f, ensure_ascii = False, sort_keys = True, indent = 4)
-    except Exception:
-        progress_failed('params')
-    else:
-        progress_done('params')
-
 def generate_params():
     params = []
     results = []
@@ -471,16 +458,90 @@ def generate_params():
             params.append({ 'interval': int(vp[0]), 'overlap': int(vp[1]), 'assetCode': kf })
             results.append({ 'i' + str(vp[0]) + 'o' + str(vp[1]) + kf + '.json': 0 })
     metaJson['results'] = results
-    incr_progress('params', 0.5)
-    save_params_json(params)
+    params.sort(key = lambda x: (x['assetCode'], x['interval'], x['overlap']))
+    progress_done('params')
+    return params
 
-generate_params()
+params = generate_params()
 
 #####################################
 ##          RESULTS                ##
 #####################################
 
-future_calculte_distance_matrix.result()
+def save_topo_graph(mapper_output, filter, cover, file_name):
+    global resultsDir
+    mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
+                       exponent = 1, verbose = False)
+    update_file_progress(file_name, 0.9)
+    status = 0
+    if mapper_output.stopFlag:
+        print_msg(file_name + ' Stopped! Too many nodes or too long time')
+        status = -1
+    else:
+        to_d3js_graph(mapper_output, file_name, resultsDir, True)
+        status = 1
+    update_file_progress(file_name, status)
+    return status
+
+def core_wrapper(interval, overlap, assetCode, file_name):
+    global resultsDir
+    global dist_matrix
+    global filters
+    filter = filters[assetCode]
+    print_msg('Data shape: ' + str(dist_matrix.shape) + ', Filter shape: ' + str(filter.shape))
+    update_file_progress(file_name, 0)
+    cover = mapper.cover.cube_cover_primitive(interval, overlap)
+    mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
+                                     cluster = mapper.single_linkage(),
+                                     metricpar = { 'metric': 'euclidean' },
+                                     verbose = False)
+    update_file_progress(file_name, 0.5)
+    gc.collect()
+    return ioPool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
+
+dist_matrix = future_calculte_distance_matrix.result()
+del confUser, interval, overlap, yCols, rawdataDir, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_to_target, jsonNameTails
+gc.collect()
+
+p = 0.25
+print_results_progress(p)
+
+steps = len(params)
+step = (0.8 - p) / steps
+future_to_file = {}
+for param in params:
+    (i, o, a) = (param['interval'], param['overlap'], param['assetCode'])
+    file_name = 'i' + str(i) + 'o' + str(o) + a
+    f = computePool.submit(core_wrapper, i, o, a, file_name)
+    future_to_file[f] = file_name
+    p += step
+    print_results_progress(p)
+    time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 150))
+step = (0.98 - p) / steps
+future_to_file_status = {}
+for f in futures.as_completed(future_to_file):
+    file_name = future_to_file[f]
+    status = 0
+    try:
+        future = f.result()
+    except Exception as ex:
+        status = -1
+        print_msg('Result %r generated an exception: %s' % (file_name, ex))
+        update_file_progress(file_name, status)
+    else:
+        future_to_file[future] = (file_name, status)
+    p += step
+    print_results_progress(p)
+for f in futures.as_completed(future_to_file_status):
+    (file_name, status) = future_to_file_status[f]
+    if status != -1:
+        try:
+            status = f.result()
+        except Exception as ex:
+            status = -1
+            print_msg('Result %r generated an exception: %s' % (file_name, ex))
+
+print_results_progress(1)
 
 computePool.shutdown()
 ioPool.shutdown()
