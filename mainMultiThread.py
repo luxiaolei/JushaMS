@@ -54,7 +54,7 @@ yCols = ['Y107', 'Y170', 'Y130']
 
 def print_msg(msg):
     elapsed_time_msg = '========= Elapsed time: {0:.2f} sec =========\n'.format((datetime.now() - now).total_seconds())
-    print(elapsed_time_msg + msg, flush = True)
+    print(elapsed_time_msg + msg + '\n', end = '', flush = True)
 
 def save_metadata_json_file():
     global metaJsonFile
