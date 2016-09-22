@@ -53,8 +53,8 @@ yCols = ['Y107', 'Y170', 'Y130']
 #####################################
 
 def print_msg(msg):
-    print('========= Elapsed time: {0:.2f} sec ========='.format((datetime.now() - now).total_seconds()), flush = True)
-    print(msg, flush = True)
+    elapsed_time_msg = '========= Elapsed time: {0:.2f} sec =========\n'.format((datetime.now() - now).total_seconds())
+    print(elapsed_time_msg + msg, flush = True)
 
 def save_metadata_json_file():
     global metaJsonFile
@@ -495,16 +495,18 @@ def param_to_file_name(interval, overlap, assetCode):
 def core_wrapper(resultsDir, data, interval, overlap, assetCode, file_name):
     filter = filters[assetCode]
     print_msg('Data shape: ' + str(data.shape) + ', Filter shape: ' + str(filter.shape))
-    print_msg('Calculating topology graph of ' + file_name + '...')
+    print_msg('!!!!!!!!' + file_name + ': 0!!!!!!!!')
     try:
         cover = mapper.cover.cube_cover_primitive(interval, overlap)
         mapper_output = mapper.jushacore(data, filter, cover = cover, cutoff = None,
                                          cluster = mapper.single_linkage(),
                                          metricpar = { 'metric': 'euclidean' },
                                          verbose = False)
+        print_msg('!!!!!!!!' + file_name + ': 0.3!!!!!!!!')
         gc.collect()
         mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                            exponent = 1, verbose = False)
+        print_msg('!!!!!!!!' + file_name + ': 0.6!!!!!!!!')
         gc.collect()
     except Exception:
         return -1
@@ -513,11 +515,9 @@ def core_wrapper(resultsDir, data, interval, overlap, assetCode, file_name):
             print_msg(file_name + ' Stopped! Too many nodes or too long time')
             return -1
         else:
-            print_msg(file_name + ' Successed!')
-            print_msg('type check: ' + str(type(mapper_output)))
             to_d3js_graph(mapper_output, file_name, resultsDir, True)
+            print_msg('!!!!!!!!' + file_name + ': 0.9!!!!!!!!')
             gc.collect()
-            print_msg('Core ran finished! with: ' + file_name)
             return 1
 
 try:
@@ -541,7 +541,7 @@ for param in params:
     except Exception as ex:
         status = -1
         print('Result %r generated an exception: %s' % (file_name, ex))
-    print_msg('!!!!!!!! ' + file_name + ': ' + str(status) + ' !!!!!!!!')
+    print_msg('!!!!!!!!' + file_name + ': ' + str(status) + '!!!!!!!!')
     metaJson['results'].append({ file_name + '.json': status })
     update_metadata()
     p += step
