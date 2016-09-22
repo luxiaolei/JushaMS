@@ -27,7 +27,6 @@ resultsDir = path.join(dataDir, 'results')
 metaJsonFile = path.join(dataDir, 'metadata.json')
 
 metaJson = json.load(open(metaJsonFile, 'r', encoding = 'utf8'))
-metaJson['results'] = []
 
 params = json.load(open(path.join(dataDir, 'params.json'), 'r', encoding = 'utf8'))
 params.sort(key = lambda x: (x['assetCode'], x['interval'], x['overlap']))
@@ -48,7 +47,7 @@ def update_metadata(file_name, status):
     global metaJsonFile
     global metaJson
     name = file_name + '.json'
-    idx = [i for i, x in enumerate(metaJson['results']) if x[name] == 0][0]
+    idx = [i for i, x in enumerate(metaJson['results']) if x[name] != 1][0]
     metaJson['results'][idx][name] = status
     with open(metaJsonFile, 'w', encoding = 'utf8') as f:
         json.dump(metaJson, f, ensure_ascii = False, sort_keys = True, indent = 4)
