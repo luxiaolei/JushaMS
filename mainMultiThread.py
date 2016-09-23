@@ -15,6 +15,7 @@ from datetime import datetime
 import json
 import pandas as pd
 import numpy as np
+import psutil
 from sklearn.preprocessing import MinMaxScaler
 # from sklearn.metrics.pairwise import pairwise_distances
 from scipy.spatial.distance import pdist
@@ -473,8 +474,8 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     gc.collect()
     return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
-def running_count(fs):
-    return sum(1 for x in filter(lambda x: x.running(), fs))
+def running_count_and_mem_used(fs):
+    return (sum(1 for x in filter(lambda x: x.running(), fs)), psutil.virtual_memory().percent)
 
 dist_matrix = future_calculte_distance_matrix.result()
 del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, future_to_target
@@ -500,10 +501,10 @@ for a in map(lambda x: '_' + x[1:], yCols):
         p += step
         print_results_progress(p)
         time.sleep(delay)
-        r_count = running_count(future_to_file.keys())
-        while r_count > 1:
+        (r_count, mem_used) = running_count_and_mem_used(future_to_file.keys())
+        while r_count > 2 or mem_used > 80:
             time.sleep(1)
-            r_count = running_count(future_to_file.keys())
+            (r_count, mem_used) = running_count_and_mem_used(future_to_file.keys())
 step = (0.98 - p) / steps
 future_to_file_status = {}
 for f in futures.as_completed(future_to_file):
