@@ -40,6 +40,7 @@ interval = confUser['interval']
 overlap = confUser['overlap']
 metaJsonFile = path.join(dataDir, 'metadata.json')
 metaJson = json.load(open(metaJsonFile, 'r', encoding = 'utf8'))
+resultsDir = path.join(dataDir, 'results')
 
 yCols = ['Y107', 'Y170', 'Y130']
 
@@ -446,20 +447,15 @@ def save_topo_graph(mapper_output, filter, cover, file_name):
     mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
                        exponent = 1, verbose = False)
     update_file_progress(file_name, 0.9)
-    try:
-        status = 0
-        if mapper_output.stopFlag:
-            print_msg(file_name + ' Stopped! Too many nodes or too long time')
-            status = -1
-        else:
-            print_msg('graph: {0}, nodes: {1}'.format(file_name, len(mapper_output.nodes)))
-            to_d3js_graph(mapper_output, file_name, resultsDir, True)
-            status = 1
-        update_file_progress(file_name, status)
-        return status
-    except Exception as ex:
-        print_msg('Result %r generated an exception: %s' % (file_name, ex))
-        raise ex
+    status = 0
+    if mapper_output.stopFlag:
+        print_msg(file_name + ' Stopped! Too many nodes or too long time')
+        status = -1
+    else:
+        to_d3js_graph(mapper_output, file_name, resultsDir, True)
+        status = 1
+    update_file_progress(file_name, status)
+    return status
 
 def core_wrapper(interval, overlap, assetCode, file_name):
     global resultsDir
@@ -478,7 +474,7 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
 dist_matrix = future_calculte_distance_matrix.result()
-del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X
+del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, future_to_target
 gc.collect()
 
 p = 0.25
