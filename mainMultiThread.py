@@ -479,10 +479,17 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     print_msg('Data shape: ' + str(dist_matrix.shape) + ', Filter shape: ' + str(filter.shape))
     update_file_progress(file_name, 0)
     cover = mapper.cover.cube_cover_primitive(interval, overlap)
-    mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
-                                     cluster = mapper.single_linkage(),
-                                     metricpar = { 'metric': 'euclidean' },
-                                     verbose = False)
+    mapper_output = None
+    while mapper_output == None:
+        try:
+            mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
+                                             cluster = mapper.single_linkage(),
+                                             metricpar = { 'metric': 'euclidean' },
+                                             verbose = False)
+        except MemoryError:
+            print_msg('NOT ENOUGH MEMORY FOR ' + file_name + ', RETRY...')
+            gc.collect()
+            time.sleep(5)
     update_file_progress(file_name, 0.5)
     gc.collect()
     return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
