@@ -473,6 +473,9 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     gc.collect()
     return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
+def running_count(fs):
+    return sum(1 for x in filter(lambda x: x.running(), fs))
+
 dist_matrix = future_calculte_distance_matrix.result()
 del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, future_to_target
 gc.collect()
@@ -486,7 +489,7 @@ metaJson['results'] = {}
 steps = len(yCols) * len(ioDic)
 step = (0.8 - p) / steps
 future_to_file = {}
-delay = int(len(list(filters.items())[0][1]) / 100000.0 * 200)
+delay = int(len(list(filters.items())[0][1]) / 100000.0 * 100)
 params = list(map(lambda x: (int(x[0]), int(x[1])), ioDic.values()))
 params.sort(key = lambda x: (x[0], x[1]))
 for a in map(lambda x: '_' + x[1:], yCols):
@@ -497,6 +500,9 @@ for a in map(lambda x: '_' + x[1:], yCols):
         p += step
         print_results_progress(p)
         time.sleep(delay)
+        r_count = running_count(future_to_file.keys())
+            time.sleep(1)
+            r_count = running_count(future_to_file.keys())
 step = (0.98 - p) / steps
 future_to_file_status = {}
 for f in futures.as_completed(future_to_file):
