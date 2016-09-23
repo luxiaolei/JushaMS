@@ -47,6 +47,7 @@ except ImportError:
 from jushacore.jusha_output import jusha_output, fcluster
 import time
 import psutil
+import gc
 
 __all__ = ['jushacore', 'single_linkage', 'complete_linkage',
            'average_linkage', 'weighted_linkage', 'centroid_linkage',
@@ -168,6 +169,7 @@ def Mapper_step(q, pcd, N, point_labels, filt, cover, cluster, cutoff, M,
                 mem_size = n*(n-1)//2 * 8 * 1.05
                 while psutil.virtual_memory().available < mem_size:
                     print('THERE IS NOT ENOUGH MEMORY FOR {0:.2f}GB MATRIX, PLEASE WAIT...'.format(mem_size / 1024 / 1024 / 1024), flush = True)
+                    gc.collect()
                     time.sleep(5)
                 part_data = compressed_submatrix(pcd,idx)
             else:
