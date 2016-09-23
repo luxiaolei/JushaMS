@@ -486,7 +486,7 @@ def core_wrapper(interval, overlap, assetCode, file_name):
                                              cluster = mapper.single_linkage(),
                                              metricpar = { 'metric': 'euclidean' },
                                              verbose = False)
-        except MemoryError:
+        except MemoryError: # may not work
             print_msg('NOT ENOUGH MEMORY FOR ' + file_name + ', RETRY...')
             gc.collect()
             time.sleep(5)
@@ -508,49 +508,37 @@ ioDic = genIODic(interval, overlap)
 metaJson['results'] = {}
 
 steps = len(yCols) * len(ioDic)
-step = (0.8 - p) / steps
-future_to_file = {}
-delay = int(len(list(filters.items())[0][1]) / 100000.0 * 100)
+step = (0.9 - p) / steps
 params = list(map(lambda x: (int(x[0]), int(x[1])), ioDic.values()))
-params.sort(key = lambda x: (x[0], x[1]))
+params.sort(key = lambda x: (-x[1], -x[0]))
+future_to_file_status = {}
 for a in map(lambda x: '_' + x[1:], yCols):
     for i, o in params:
         file_name = 'i' + str(i) + 'o' + str(o) + a
-        f = computePool.submit(core_wrapper, i, o, a, file_name)
-        future_to_file[f] = file_name
+        try:
+            f = core_wrapper(i, o, a, file_name)
+        except Exception as ex:
+            print_msg('Result %r generated an exception: %s' % (file_name, ex))
+            update_file_progress(file_name, -1)
+        else:
+            future_to_file_status[f] = (file_name, 0.5)
         p += step
         print_results_progress(p)
-        time.sleep(delay)
-        (r_count, mem_used) = running_count_and_mem_used(future_to_file.keys())
-        while r_count > 2 or mem_used > 80:
-            time.sleep(1)
-            (r_count, mem_used) = running_count_and_mem_used(future_to_file.keys())
+
 step = (0.98 - p) / steps
-future_to_file_status = {}
-for f in futures.as_completed(future_to_file):
-    file_name = future_to_file[f]
-    status = 0
-    try:
-        future = f.result()
-    except Exception as ex:
-        status = -1
-        print_msg('Result %r generated an exception: %s' % (file_name, ex))
-        update_file_progress(file_name, status)
-    else:
-        future_to_file[future] = (file_name, status)
-    p += step
-    print_results_progress(p)
 for f in futures.as_completed(future_to_file_status):
     (file_name, status) = future_to_file_status[f]
     if status != -1:
         f.result()
 
+############################################################
 old_results = []
 for file_name, status in metaJson['results'].items():
     old_results.append({ file_name + '.json': status })
 metaJson['params'] = 1
 metaJson['results'] = old_results
 save_metadata_json_file()
+############################################################
 
 print_results_progress(1)
 
