@@ -494,9 +494,6 @@ def core_wrapper(interval, overlap, assetCode, file_name):
     gc.collect()
     return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 
-def running_count_and_mem_used(fs):
-    return (sum(1 for x in filter(lambda x: x.running(), fs)), psutil.virtual_memory().percent)
-
 dist_matrix = future_calculte_distance_matrix.result()
 del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, future_to_target
 gc.collect()
