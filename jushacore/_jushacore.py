@@ -45,7 +45,7 @@ except ImportError:
     from scipy.cluster.hierarchy import linkage
 
 from jushacore.jusha_output import jusha_output, fcluster
-from time import time
+import time
 import psutil
 
 __all__ = ['jushacore', 'single_linkage', 'complete_linkage',
