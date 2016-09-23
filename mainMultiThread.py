@@ -486,7 +486,7 @@ metaJson['results'] = {}
 steps = len(yCols) * len(ioDic)
 step = (0.8 - p) / steps
 future_to_file = {}
-delay = int(len(list(filters.items())[0][1]) / 100000.0 * 180)
+delay = int(len(list(filters.items())[0][1]) / 100000.0 * 240)
 params = list(map(lambda x: (int(x[0]), int(x[1])), ioDic.values()))
 params.sort(key = lambda x: (x[0], x[1]))
 for a in map(lambda x: '_' + x[1:], yCols):
