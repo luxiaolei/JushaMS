@@ -501,7 +501,7 @@ for a in map(lambda x: '_' + x[1:], yCols):
         print_results_progress(p)
         time.sleep(delay)
         r_count = running_count(future_to_file.keys())
-        while r_count > 2:
+        while r_count > 1:
             time.sleep(1)
             r_count = running_count(future_to_file.keys())
 step = (0.98 - p) / steps
