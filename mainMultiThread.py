@@ -521,6 +521,12 @@ for f in futures.as_completed(future_to_file_status):
             status = -1
             print_msg('Result %r generated an exception: %s' % (file_name, ex))
 
+old_results = []
+for file_name, status in metaJson['results'].items():
+    old_results.append({ file_name + '.json': status })
+metaJson['results'] = old_results
+save_metadata_json_file()
+
 print_results_progress(1)
 
 computePool.shutdown()
