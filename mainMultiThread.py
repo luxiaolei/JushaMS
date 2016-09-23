@@ -524,6 +524,7 @@ for f in futures.as_completed(future_to_file_status):
 old_results = []
 for file_name, status in metaJson['results'].items():
     old_results.append({ file_name + '.json': status })
+metaJson['params'] = 1
 metaJson['results'] = old_results
 save_metadata_json_file()
 
