@@ -463,7 +463,7 @@ def save_topo_graph(mapper_output, filter, cover, file_name):
             except Exception as ex:
                 print_msg('Result %r generated an exception: %s' % (file_name, ex))
                 traceback.print_exc()
-                if str(ex) === '[Errno 12] Cannot allocate memory':
+                if str(ex) == '[Errno 12] Cannot allocate memory':
                     time.sleep(10)
                 else:
                     status = -1
