@@ -490,8 +490,7 @@ delay = int(len(list(filters.items())[0][1]) / 100000.0 * 180)
 params = list(map(lambda x: (int(x[0]), int(x[1])), ioDic.values()))
 params.sort(key = lambda x: (x[0], x[1]))
 for a in map(lambda x: '_' + x[1:], yCols):
-    for p in params:
-        (i, o) = (p[0], p[1])
+    for i, o in params:
         file_name = 'i' + str(i) + 'o' + str(o) + a
         f = computePool.submit(core_wrapper, i, o, a, file_name)
         future_to_file[f] = file_name
