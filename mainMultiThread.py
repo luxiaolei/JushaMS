@@ -445,18 +445,22 @@ progress_done('transformed')
 
 def save_topo_graph(mapper_output, filter, cover, file_name):
     global resultsDir
-    mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
-                       exponent = 1, verbose = False)
-    update_file_progress(file_name, 0.9)
-    status = 0
-    if mapper_output.stopFlag:
-        print_msg(file_name + ' Stopped! Too many nodes or too long time')
-        status = -1
-    else:
-        to_d3js_graph(mapper_output, file_name, resultsDir, True)
-        status = 1
-    update_file_progress(file_name, status)
-    return status
+    try:
+        mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
+                           exponent = 1, verbose = False)
+        update_file_progress(file_name, 0.9)
+        status = 0
+        if mapper_output.stopFlag:
+            print_msg(file_name + ' Stopped! Too many nodes or too long time')
+            status = -1
+        else:
+            to_d3js_graph(mapper_output, file_name, resultsDir, True)
+            status = 1
+        update_file_progress(file_name, status)
+        return status
+    except Exception as ex:
+        print_msg('Result %r generated an exception: %s' % (file_name, ex))
+        raise ex
 
 def core_wrapper(interval, overlap, assetCode, file_name):
     global resultsDir
@@ -527,7 +531,6 @@ for f in futures.as_completed(future_to_file_status):
             status = f.result()
         except Exception as ex:
             status = -1
-            print_msg('Result %r generated an exception: %s' % (file_name, ex))
 
 old_results = []
 for file_name, status in metaJson['results'].items():
