@@ -486,15 +486,18 @@ metaJson['results'] = {}
 steps = len(yCols) * len(ioDic)
 step = (0.8 - p) / steps
 future_to_file = {}
+delay = int(len(list(filters.items())[0][1]) / 100000.0 * 180)
+params = list(map(lambda x: (int(x[0]), int(x[1])), ioDic.values()))
+params.sort(key = lambda x: (x[0], x[1]))
 for a in map(lambda x: '_' + x[1:], yCols):
-    for kp, vp in ioDic.items():
-        (i, o) = (int(vp[0]), int(vp[1]))
+    for p in params:
+        (i, o) = (p[0], p[1])
         file_name = 'i' + str(i) + 'o' + str(o) + a
         f = computePool.submit(core_wrapper, i, o, a, file_name)
         future_to_file[f] = file_name
         p += step
         print_results_progress(p)
-        time.sleep(int(len(list(filters.items())[0][1]) / 100000.0 * 150))
+        time.sleep(delay)
 step = (0.98 - p) / steps
 future_to_file_status = {}
 for f in futures.as_completed(future_to_file):
