@@ -46,6 +46,7 @@ except ImportError:
 
 from jushacore.jusha_output import jusha_output, fcluster
 from time import time
+import psutil
 
 __all__ = ['jushacore', 'single_linkage', 'complete_linkage',
            'average_linkage', 'weighted_linkage', 'centroid_linkage',
@@ -401,9 +402,14 @@ def compressed_submatrix(dm, idx):
     @return: compressed distance matrix
     @rtype: numpy.ndarray(n*(n-1)/2, dtype=float)
     '''
+    arr_len = n*(n-1)//2
+    mem_size = arr_len * 8 * 1.05
+    while psutil.virtual_memory().available < mem_size:
+        print('THERE IS NOT ENOUGH MEMORY FOR {0:.2f}GB MATRIX, PLEASE WAIT...'.format(mem_size / 1024 / 1024 / 1024), flush = True)
+        time.sleep(10)
     N = n_obs(dm)
     n = np.alen(idx)
-    res = np.empty(n*(n-1)//2,dtype=dm.dtype)
+    res = np.empty(arr_len,dtype=dm.dtype)
     # Shorter Python code, does the same thing.
     # Which variant is faster?
     #
