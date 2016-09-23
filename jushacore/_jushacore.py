@@ -45,9 +45,7 @@ except ImportError:
     from scipy.cluster.hierarchy import linkage
 
 from jushacore.jusha_output import jusha_output, fcluster
-import time
-import psutil
-import gc
+from time import time
 
 __all__ = ['jushacore', 'single_linkage', 'complete_linkage',
            'average_linkage', 'weighted_linkage', 'centroid_linkage',
@@ -165,12 +163,6 @@ def Mapper_step(q, pcd, N, point_labels, filt, cover, cluster, cutoff, M,
                 print('Filter level {0} has {1} points.'.\
                           format(level.index, num_points))
             if pcd.ndim==1:
-                n = np.alen(idx)
-                mem_size = n*(n-1)//2 * 8 * 1.05
-                while psutil.virtual_memory().available < mem_size:
-                    print('THERE IS NOT ENOUGH MEMORY FOR {0:.2f}GB MATRIX, PLEASE WAIT...'.format(mem_size / 1024 / 1024 / 1024), flush = True)
-                    gc.collect()
-                    time.sleep(5)
                 part_data = compressed_submatrix(pcd,idx)
             else:
                 part_data = pdist(pcd[idx,:], **metricpar)
