@@ -439,6 +439,7 @@ for future in futures.as_completed(future_to_target):
         incr_progress('transformed', step)
         filters[name] = svmfilter
 progress_done('transformed')
+progress_done('params')
 
 #####################################
 ##          RESULTS                ##
