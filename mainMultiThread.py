@@ -62,7 +62,7 @@ def save_metadata_json_file():
 
 def update_file_status(file_name, status):
     global metaJson
-    metaJson['results'][file_name] = status
+    metaJson['results'][file_name + '.json'] = status
     save_metadata_json_file()
 
 def update_file_progress(file_name, p):
@@ -527,15 +527,6 @@ for f in futures.as_completed(future_to_file_status):
     (file_name, status) = future_to_file_status[f]
     if status != -1:
         f.result()
-
-############################################################
-old_results = []
-for file_name, status in metaJson['results'].items():
-    old_results.append({ file_name + '.json': status })
-metaJson['params'] = 1
-metaJson['results'] = old_results
-save_metadata_json_file()
-############################################################
 
 print_results_progress(1)
 
