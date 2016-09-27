@@ -507,12 +507,12 @@ for name in filters.keys():
     filter_idx += 1
     filter_arrays.append(filters[name])
 
-max_interval = int(pow(filter.shape[1], 1 / len(filter_arrays)))
-interval = max_interval
+filter = np.array(filter_arrays, np.float)
+interval = int(pow(filter.shape[1], 1 / len(filter_arrays)))
 overlap = 50
 file_name = 'i{0}o{1}_3d'.format(interval, overlap)
 
-f = core_wrapper(np.array(filter_arrays, np.float), interval, overlap, file_name)
+f = core_wrapper(filter, interval, overlap, file_name)
 print_results_progress(0.5)
 try:
     status = f.result()
