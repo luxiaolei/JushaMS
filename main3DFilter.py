@@ -445,6 +445,8 @@ progress_done('params')
 ##          RESULTS                ##
 #####################################
 
+metaJson['results'] = {}
+
 def save_topo_graph(mapper_output, filter, cover, file_name):
     global resultsDir
     mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
@@ -472,6 +474,27 @@ def save_topo_graph(mapper_output, filter, cover, file_name):
     update_file_progress(file_name, status)
     return status
 
+def core_wrapper(filter, interval, overlap, file_name):
+    global resultsDir
+    global dist_matrix
+    print_msg('Data shape: ' + str(dist_matrix.shape) + ', Filter shape: ' + str(filter.shape))
+    update_file_progress(file_name, 0)
+    cover = mapper.cover.cube_cover_primitive(interval, overlap)
+    mapper_output = None
+    while mapper_output == None:
+        try:
+            mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
+                                             cluster = mapper.single_linkage(),
+                                             metricpar = { 'metric': 'euclidean' },
+                                             verbose = False)
+        except MemoryError: # may not work
+            print_msg('NOT ENOUGH MEMORY FOR ' + file_name + ', RETRY...')
+            gc.collect()
+            time.sleep(5)
+    update_file_progress(file_name, 0.5)
+    gc.collect()
+    return computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
+
 dist_matrix = future_calculte_distance_matrix.result()
 del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, future_to_target
 gc.collect()
@@ -484,31 +507,13 @@ for name in filters.keys():
     filter_idx += 1
     filter_arrays.append(filters[name])
 
-filter = np.array(filter_arrays, np.float)
 max_interval = int(pow(filter.shape[1], 1 / len(filter_arrays)))
 interval = max_interval
-overlap = 80
+overlap = 50
 file_name = 'i{0}o{1}_3d'.format(interval, overlap)
 
-update_file_progress(file_name, 0.1)
-print_results_progress(0.1)
-cover = mapper.cover.cube_cover_primitive(interval, overlap)
-mapper_output = None
-while mapper_output == None:
-    try:
-        mapper_output = mapper.jushacore(dist_matrix, filter, cover = cover, cutoff = None,
-                                         cluster = mapper.single_linkage(),
-                                         metricpar = { 'metric': 'euclidean' },
-                                         verbose = False)
-    except MemoryError: # may not work
-        print_msg('NOT ENOUGH MEMORY FOR ' + file_name + ', RETRY...')
-        gc.collect()
-        time.sleep(5)
-update_file_progress(file_name, 0.5)
+f = core_wrapper(np.array(filter_arrays, np.float), interval, overlap, file_name)
 print_results_progress(0.5)
-gc.collect()
-
-f = computePool.submit(save_topo_graph, mapper_output, filter, cover, file_name)
 try:
     status = f.result()
 except Exception as ex:
