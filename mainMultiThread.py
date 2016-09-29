@@ -451,12 +451,11 @@ def max_interval(filter):
     f_min = u_filter[0]
     f_max = u_filter[-1]
     print('f_min: {0}, f_max: {1}'.format(f_min, f_max))
+    f_range = f_max - f_min
+    for i in range(len(u_filter)):
+        u_filter[i] = round((u_filter[i] - f_min) / f_range, 4)
+    u_filter = np.unique(u_filter)
     u_count = len(u_filter)
-    if 0.0 <= f_min and f_max <= 1.0:
-        for i in range(u_count):
-            u_filter[i] = round(u_filter[i], 3)
-        u_filter = np.unique(u_filter)
-        u_count = len(u_filter)
     if u_count <= 1:
         return 1
     min_step = reduce(
@@ -464,7 +463,7 @@ def max_interval(filter):
         u_filter[1:],
         (u_filter[1] - u_filter[0], u_filter[0])
     )[0]
-    return int(round((f_max - f_min) / min_step))
+    return int(round(f_range / min_step))
 
 def min_overlap(filter, interval, sorted_idses):
     f_min = filter[sorted_idses[0]]
