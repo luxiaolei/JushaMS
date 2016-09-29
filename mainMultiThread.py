@@ -492,10 +492,10 @@ def min_overlap(filter, interval, sorted_idses):
 
 def overlaps(filter, interval, sorted_idses):
     results = []
-    print_msg('interval: ' + interval)
+    print_msg('interval: ' + str(interval))
     print_msg('min_overlap...')
     o = min_overlap(filter, interval, sorted_idses)
-    print_msg('min_overlap: ' + o)
+    print_msg('min_overlap: ' + str(o))
     while o <= 95:
         results.append(o)
         o += 10
