@@ -463,7 +463,7 @@ def max_interval(filter):
         u_filter[1:],
         (u_filter[1] - u_filter[0], u_filter[0])
     )[0]
-    return round((f_max - f_min) / min_step)
+    return int(round((f_max - f_min) / min_step))
 
 def min_overlap(filter, interval, sorted_idses):
     f_min = filter[sorted_idses[0]]
@@ -472,11 +472,14 @@ def min_overlap(filter, interval, sorted_idses):
     step = (f_max - f_min) / interval
     o = 5
     while o < 100:
+        print(1)
         f_from = f_min
         while f_from < f_max:
+            print(2)
             f_to = f_from + step
             i = 0
             for idx in sorted_idses:
+                print(3)
                 i += 1
                 v = filter[idx]
                 if v >= f_to or f_from > v:
@@ -494,11 +497,12 @@ def overlaps(filter, interval, sorted_idses):
     results = []
     print_msg('interval: ' + str(interval))
     print_msg('min_overlap...')
-    o = min_overlap(filter, interval, sorted_idses)
-    print_msg('min_overlap: ' + str(o))
-    while o <= 95:
+    min_ovrlp = min_overlap(filter, interval, sorted_idses)
+    print_msg('min_overlap: ' + str(min_ovrlp))
+    step = (95 - min_ovrlp) / 3
+    for i in range(3):
+        o = int(min_ovrlp + round(i * step))
         results.append(o)
-        o += 10
     return results
 
 def intervals_and_overlaps(filter):
@@ -507,9 +511,9 @@ def intervals_and_overlaps(filter):
     sorted_idses = np.argsort(filter)
     print_msg('max_interval...')
     max_intrvl = max_interval(filter)
-    step = int(max_intrvl / 4)
-    for i in range(4):
-        intrvl = max_intrvl - step * i
+    step = (max_intrvl - 10) / 3
+    for i in range(3):
+        intrvl = int(max_intrvl - round(i * step))
         for o in overlaps(filter, intrvl, sorted_idses):
             results.append((intrvl, o))
     return results
