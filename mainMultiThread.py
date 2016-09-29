@@ -446,6 +446,12 @@ progress_done('params')
 ##          RESULTS                ##
 #####################################
 
+def diff_filter(i, j):
+    d = i - j
+    if d < 0.001:
+        return float('inf')
+    return d
+
 def max_interval(filter):
     u_filter = np.unique(filter)
     f_min = u_filter[0]
@@ -453,15 +459,14 @@ def max_interval(filter):
     print('f_min: {0}, f_max: {1}'.format(f_min, f_max))
     f_range = f_max - f_min
     for i in range(len(u_filter)):
-        u_filter[i] = round((u_filter[i] - f_min) / f_range, 4)
+        u_filter[i] = round((u_filter[i] - f_min) / f_range, 3)
     u_filter = np.unique(u_filter)
-    u_count = len(u_filter)
-    if u_count <= 1:
+    if len(u_filter) <= 1:
         return 1
     min_step = reduce(
-        lambda r, i: (min(r[0], i - r[1]), i),
-        u_filter[1:],
-        (u_filter[1] - u_filter[0], u_filter[0])
+        lambda r, i: (min(r[0], diff_filter(i, r[1])), i),
+        filter[1:],
+        (diff_filter(u_filter[1], u_filter[0]), u_filter[0])
     )[0]
     return int(round(f_range / min_step))
 
