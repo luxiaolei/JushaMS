@@ -12,6 +12,7 @@ from concurrent import futures
 from concurrent.futures import ThreadPoolExecutor
 from os import path
 from datetime import datetime
+from functools import reduce
 
 import json
 import pandas as pd
@@ -445,6 +446,69 @@ progress_done('params')
 ##          RESULTS                ##
 #####################################
 
+def max_interval(filter):
+    u_filter = np.unique(filter)
+    f_min = u_filter[0]
+    f_max = u_filter[-1]
+    u_count = len(u_filter)
+    if 0.0 <= f_min and f_max <= 1.0:
+        for i in range(u_count):
+            u_filter[i] = round(u_filter[i], 3)
+        u_filter = np.unique(u_filter)
+        u_count = len(u_filter)
+    if u_count <= 1:
+        return 1
+    min_step = reduce(
+        lambda r, i: (min(r[0], i - r[1]), i),
+        u_filter[1:],
+        (u_filter[1] - u_filter[0], u_filter[0])
+    )[0]
+    return round((f_max - f_min) / min_step)
+
+def min_overlap(filter, interval, sorted_idses):
+    f_min = filter[sorted_idses[0]]
+    f_max = filter[sorted_idses[-1]]
+    n = len(sorted_idses)
+    step = (f_max - f_min) / interval
+    o = 5
+    while o < 100:
+        f_from = f_min
+        while f_from < f_max:
+            f_to = f_from + step
+            i = 0
+            for idx in sorted_idses:
+                i += 1
+                v = filter[idx]
+                if v >= f_to or f_from > v:
+                    break
+            f_overlap = f_to + (o / 100) * step
+            if i < n:
+                v = filter[i]
+                if f_to <= v and v < f_overlap:
+                    return o
+            f_from = f_to
+        o += 5
+    return o
+
+def overlaps(filter, interval, sorted_idses):
+    results = []
+    o = min_overlap(filter, interval, sorted_idses)
+    while o <= 95:
+        results.append(o)
+        o += 10
+    return results
+
+def intervals_and_overlaps(filter):
+    results = []
+    sorted_idses = np.argsort(filter)
+    max_intrvl = max_interval(filter)
+    step = int(max_intrvl / 4)
+    for i in range(4):
+        intrvl = max_intrvl - step * i
+        for o in overlaps(filter, intrvl, sorted_idses):
+            results.append((intrvl, o))
+    return results
+
 def save_topo_graph(mapper_output, filter, cover, file_name):
     global resultsDir
     mapper.scale_graph(mapper_output, filter, cover = cover, weighting = 'inverse',
@@ -498,6 +562,10 @@ def core_wrapper(interval, overlap, assetCode, file_name):
 dist_matrix = future_calculte_distance_matrix.result()
 del dfuimage, dfuimageRaw, dfuinfo, dftrade, dfasset_dummy, uid107, uid170, uid130, dfXY, dfX, dfYs, scaler, X, future_load_user_image, future_load_user_info, future_load_trade, future_load_asset, future_to_target
 gc.collect()
+
+for a in filters.keys():
+    print_msg('{0} intervals and overlaps:\n\t{1}'.format(a, intervals_and_overlaps(filters[a])))
+exit(0)
 
 p = 0.25
 print_results_progress(p)
