@@ -492,7 +492,10 @@ def min_overlap(filter, interval, sorted_idses):
 
 def overlaps(filter, interval, sorted_idses):
     results = []
+    print_msg('interval: ' + interval)
+    print_msg('min_overlap...')
     o = min_overlap(filter, interval, sorted_idses)
+    print_msg('min_overlap: ' + o)
     while o <= 95:
         results.append(o)
         o += 10
@@ -500,7 +503,9 @@ def overlaps(filter, interval, sorted_idses):
 
 def intervals_and_overlaps(filter):
     results = []
+    print_msg('sorting filter...')
     sorted_idses = np.argsort(filter)
+    print_msg('max_interval...')
     max_intrvl = max_interval(filter)
     step = int(max_intrvl / 4)
     for i in range(4):
